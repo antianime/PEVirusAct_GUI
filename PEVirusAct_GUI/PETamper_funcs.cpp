@@ -1,4 +1,4 @@
-#include"fh.h"
+#include"PETamper.h"
 
 using namespace std;
 
@@ -22,79 +22,53 @@ std::vector<BYTE> stubbuffer;
 
 unsigned char shellcode[];							// 存储shellcode代码
 
+
 // DOS头字段信息（名称、大小、偏移量)
-std::vector< FieldInfo>IMAGE_DOS_HEADER_INFO = {
-	{"e_magic",2, },
-	{"e_cblp",2,} ,                 // Bytes on last page of file
-	{ "e_cp",2, },                       // Pages in file
-	{ "e_crlc", 2,},                      // Relocations
-	{ "e_cparhdr", 2,},                  // Size of header in paragraphs
-	{ "e_minalloc",2, },                  // Minimum extra paragraphs needed
-	{ "e_maxalloc",2, },                  // Maximum extra paragraphs needed
-	{ "e_ss",2, },                       // Initial (relative) SS value
-	{ "e_sp",2, },                        // Initial SP value
-	{ "e_csum",2, },                     // Checksum
-	{ "e_ip",2, },                      // Initial IP value
-	{ "e_cs",2, },                     // Initial (relative) CS value
-	{ "e_lfarlc",2, },                  // File address of relocation table
-	{ "e_ovno",2, },                    // Overlay number
-	{ "e_res", 8,},                // Reserved words
-	{ "e_oemid",2, },                 // OEM identifier (for e_oeminfo)
-	{ "e_oeminfo",2, },                // OEM information; e_oemid specific
-	{ "e_res2",20, },               // Reserved words
-	{ "e_lfanew",4, }
+const std::vector< FieldInfo>IMAGE_DOS_HEADER_INFO = {
+	{"e_magic",2, 0x0},
+	{"e_cblp",2,0x2} ,                 // Bytes on last page of file
+	{ "e_cp",2, 0x4},                       // Pages in file
+	{ "e_crlc", 2,0x6},                      // Relocations
+	{ "e_cparhdr", 2,0x8},                  // Size of header in paragraphs
+	{ "e_minalloc",2, 0xA},                  // Minimum extra paragraphs needed
+	{ "e_maxalloc",2,0xC },                  // Maximum extra paragraphs needed
+	{ "e_ss",2, 0xE},                       // Initial (relative) SS value
+	{ "e_sp",2, 0x10},                        // Initial SP value
+	{ "e_csum",2, 0x12},                     // Checksum
+	{ "e_ip",2,0x14 },                      // Initial IP value
+	{ "e_cs",2, 0x16},                     // Initial (relative) CS value
+	{ "e_lfarlc",2,0x18 },                  // File address of relocation table
+	{ "e_ovno",2,0x1A },                    // Overlay number
+	{ "e_res", 8,0x1C},                // Reserved words
+	{ "e_oemid",2,0x24 },                 // OEM identifier (for e_oeminfo)
+	{ "e_oeminfo",2, 0x26},                // OEM information; e_oemid specific
+	{ "e_res2",20,0x28 },               // Reserved words
+	{ "e_lfanew",4,0x3C }
 };
 
 // NT头字段信息
-std::vector< FieldInfo>IMAGE_NT_HEADER_INFO = {
+const std::vector<FieldInfo>Signature;
+const std::vector<FieldInfo>IMAGE_FILE_HEADER_INFO;
+const std::vector<FieldInfo>IMAGE_OPTIONAL_HEADER_INFO;
 
+const std::vector<std::vector< FieldInfo>>IMAGE_NT_HEADERS_INFO = { Signature,IMAGE_FILE_HEADER_INFO,IMAGE_OPTIONAL_HEADER_INFO };
+
+
+const std::vector< FieldInfo> IMAGE_SECTION_HEADERS_INFO = {
+	{"Name",8,},
+	{""},
 };
 
-PETamper::PETamper(string FileName)
+//const std::vector<std::vector<FieldInfo>>ALL_HEADERS_INFO = { IMAGE_DOS_HEADER_INFO,IMAGE_NT_HEADERS_INFO,IMAGE_SECTION_HEADERS_INFO };
+
+PETamper::PETamper(HANDLE hFile)
 {
 	unsigned long NumberOfBytesRead;	// 读取字节数计数
 	unsigned char MZSignal[2];			// 用于检查"MZ"签名的缓冲区
 
 	// 打开PE文件，获取文件句柄
-	HANDLE hFile = CreateFileA(
-		(LPCSTR)FileName.c_str(), 	      // 文件名
-		GENERIC_READ | GENERIC_WRITE,	  // 读写权限
-		0,								 // 不共享
-		NULL,
-		OPEN_EXISTING,					 // 打开已存在的文件
-		FILE_ATTRIBUTE_NORMAL, 		 // 普通文件属性
-		NULL
-	);
-
 	
-	/*
-	
-	// 读取整个文件内容到内存缓冲区
-	char* allbuffer = new char[GetFileSize(hFile, NULL)];
-	if (!ReadFile(hFile, allbuffer, GetFileSize(hFile, NULL), &NumberOfBytesRead, NULL))
-	{
-		cout << "ReadFile failed at ALL!" << endl;
-		cout << "GetLastError: " << GetLastError() << endl;
-		return;
-	}
-
-
-
-	// 将读取的文件内容写入到新文件"TestFile"中（用于测试或备份)
-	HANDLE hpFile = CreateFileA(
-		"TestFile",						// 新文件名
-		GENERIC_READ | GENERIC_WRITE, 0, NULL,
-		CREATE_ALWAYS, 						// 总是创建新文件
-		FILE_ATTRIBUTE_NORMAL, NULL);
-
-	//WriteFile(hpFile, allbuffer, GetFileSize(hFile, NULL), &NumberOfBytesRead, NULL);
-	cout << "1 GetLastError:" << GetLastError() << endl;
-	delete[] allbuffer;			// 释放内存缓冲
-	//cout << hFile << endl;
-	
-	*/
-	
-
+	this->hFile = hFile;
 	
 
 	// 检查PE文件开头的"MZ"签名（DOS头签名）
@@ -195,42 +169,12 @@ PETamper::PETamper(string FileName)
 
 }
 
-
-
-/*
-
-bool ForConsole()
+PETamper::~PETamper()
 {
-	string HeaderSelection, FieldSelection;
-	do
-	{
-		system("cls");
-		cout << "HEADER TAMPER" << endl << "input selection" << endl;
-		cin >> HeaderSelection;
-		if (HeaderSelection.size() != 1)
-		{
-			cout << "Input Error!" << endl;
-			continue;
-		}
-		switch (HeaderSelection[0])
-		{
-		case 1:
-			{
-			cout << "input field selection" << endl;
-			switch
-			{
-			case 1:
-			}
-		
-
-			}
-			break;
-		case2:
-		}
-	} while (true);
-	return true;
+	CloseHandle(hFile);
 }
-*/
+
+
 
 /* 组装PE文件函数 */
 bool PETamper::Assembly(HANDLE hFile)
@@ -313,24 +257,36 @@ bool PETamper::Assembly(HANDLE hFile)
 	return true;
 }
 
+
+// 初始化字段信息结构体向量
+// 根据每个字段的大小计算其在结构体中的偏移量
 bool HeaderInfoIni(vector<FieldInfo>HEADER_INFO)
 {
+	// 遍历所有字段信息
 	for (int i = 0; i < HEADER_INFO.size(); i++)
 	{
 		if (i == 0)
-			HEADER_INFO[i].offset = 0;
+			HEADER_INFO[i].offset = 0;		// 第一个字段偏移量为0
 		else
+			// 后续字段偏移量 = 前一个字段偏移量 + 前一个字段大小
 			HEADER_INFO[i].offset = HEADER_INFO[i - 1].offset + HEADER_INFO[i - 1].size;
 	}
 	return true;
 
 }
 
+// 修改PE文件的入口点地址
 bool PETamper::EntryPointCoverA(HANDLE hpFile, DWORD EntryPoint)
 {
 	unsigned long NumberOfBytesRead;
+
+	// 将文件指针移动到PE头中的入口点地址位置
 	SetFilePointer(hpFile, inh.OptionalHeader.AddressOfEntryPoint, NULL, 0);
+
+	// 写入新的入口点地址
 	WriteFile(hpFile, &EntryPoint, sizeof(EntryPoint), &NumberOfBytesRead, NULL);
+
+	 // 检查操作是否成功
 	if (GetLastError() != ERROR_SUCCESS)
 	{
 		std::cout << "ERROR:  " << GetLastError() << endl;
@@ -340,11 +296,19 @@ bool PETamper::EntryPointCoverA(HANDLE hpFile, DWORD EntryPoint)
 		return true;
 }
 
+
+// 修改PE文件指定节区的数据
 bool PETamper::SectionTamperA(HANDLE hpFile, LONG Point, unsigned char* buffer)
 {
 	unsigned long NumberOfBytesRead;
+
+	// 将文件指针移动到指定位置
 	SetFilePointer(hpFile, Point, NULL, 0);
+
+	// 写入新的节区数据
 	WriteFile(hpFile, buffer, sizeof(buffer), &NumberOfBytesRead, NULL);
+
+	// 检查操作是否成功
 	if (GetLastError() != ERROR_SUCCESS)
 	{
 		std::cout << "ERROR:  " << GetLastError() << endl;
@@ -355,42 +319,59 @@ bool PETamper::SectionTamperA(HANDLE hpFile, LONG Point, unsigned char* buffer)
 
 }
 
+
+// 修改DOS头中的特定字段
 bool PETamper::DOSFieldTamper(PVOID object, LONG Point, string buffer)
 {
+	// 检查点位置是否有效
 	if (Point > IMAGE_DOS_HEADER_INFO.size())
 	{
 		cout << "POINT ERROR! at DOSFieldTamper" << endl;
 		return false;
 	}
+
+	// 检查缓冲区大小是否超过字段大小
 	if (IMAGE_DOS_HEADER_INFO[Point].size < buffer.size())
 	{
 		cout << "BUFFER LENGTH ERROR! at DOSFieldTamper" << endl;
 		return false;
 	}
 
+	// 用0填充缓冲区使其达到字段大小
 	buffer.append(IMAGE_DOS_HEADER_INFO[Point].size - buffer.size(), 0); //填充0x0
+
+	// 将缓冲区数据复制到DOS头的指定字段
 	memmove(&idh + IMAGE_DOS_HEADER_INFO[Point].offset, buffer.c_str(), IMAGE_DOS_HEADER_INFO[Point].size);
 
 	return true;
 }
 
+// 通用字段修改函数
 bool PETamper::FieldTamper(PVOID object, LONG Point, char* buffer)
 {
 	
+	// 将缓冲区数据复制到对象的指定位置
 	memmove((PVOID)((LONGLONG)object + (LONGLONG)Point), buffer, sizeof(buffer));
 
 	return true;
 }
 
+// 修改.text节区数据并更新入口点
 bool PETamper::TextSectionTamperA(HANDLE hpFile, unsigned char* buffer, DWORD EntryPoint)
 {
 	unsigned long NumberOfBytesRead;
 	DWORD PointerToRawPointer;
+
+	// 遍历所有节区
 	for (WORD i = 0; i < NumberOfSections; i++)
 	{
+		// 查找.text节区
 		if (!strcmp((const char*)SectionNames[i].data(), ".text"))
 		{
+			// 修改.text节区数据
 			SectionTamperA(hpFile, SectionHeaders[i].PointerToRawData, buffer);
+
+			// 更新入口点地址
 			EntryPointCoverA(hpFile, EntryPoint);
 			return true;
 		}
@@ -398,11 +379,15 @@ bool PETamper::TextSectionTamperA(HANDLE hpFile, unsigned char* buffer, DWORD En
 	return false;
 }
 
+
+// 调整节区的原始大小和原始地址
 bool PETamper::RawSizeNRawAddressAdjust()
 {
 	// 计算节区的SizeOfRawData和PointerToRawData
 	for (WORD i = 0; i < NumberOfSections; i++)
 	{
+
+		// 设置节区原始大小为实际数据大小
 		SectionHeaders[i].SizeOfRawData = Sections[i].size();
 		//SectionHeaders[i].PointerToRawData = idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER) * NumberOfSections + stubbuffer.size() + sizeof(IMAGE_DOS_HEADER);
 	}
@@ -410,6 +395,7 @@ bool PETamper::RawSizeNRawAddressAdjust()
 	//Adjust PointerToRawData
 
 	//NT Headers
+	// 调整NT头位置
 	if (idh.e_lfanew < sizeof(IMAGE_DOS_HEADER) + stubbuffer.size())
 	{
 		idh.e_lfanew = sizeof(IMAGE_DOS_HEADER) + stubbuffer.size();
@@ -421,21 +407,28 @@ bool PETamper::RawSizeNRawAddressAdjust()
 	//Sections
 	string zerobuffer;
 	int tempsize;
+
+	// 调整每个节区的文件对齐和原始指针
 	for (int i = 0; i < NumberOfSections; i++)
 	{
 		//节对齐
 		//Sections[i].resize((SectionHeaders[i].SizeOfRawData + 199) / 200 * 200, '\0');
+
+		// 计算当前节区大小与文件对齐的余数
 		tempsize = Sections[i].size() % inh.OptionalHeader.FileAlignment;
 		if (SectionHeaders[i].SizeOfRawData != 0)
 		{
+			// 如果需要对齐，填充0直到对齐
 			if (tempsize != 0)
 			{
 				Sections[i].resize(Sections[i].size() + inh.OptionalHeader.FileAlignment - tempsize, '\0');
 				SectionHeaders[i].SizeOfRawData = Sections[i].size();
 			}
 				
+			// 设置节区在文件中的原始位置
 			if (i == 0 || SectionHeaders[i - 1].SizeOfRawData == 0 || SectionHeaders[i - 1].PointerToRawData == 0)
 			{
+				// 计算第一个节区的对齐
 				tempsize = (idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER)) % inh.OptionalHeader.FileAlignment;
 				if (tempsize != 0)
 				{
@@ -446,6 +439,7 @@ bool PETamper::RawSizeNRawAddressAdjust()
 			}
 			else
 			{
+				// 后续节区的位置 = 前一个节区位置 + 前一个节区大小
 				SectionHeaders[i].PointerToRawData = SectionHeaders[i - 1].PointerToRawData + SectionHeaders[i - 1].SizeOfRawData;
 			}
 		}
@@ -461,10 +455,32 @@ bool PETamper::RawSizeNRawAddressAdjust()
 	return true;
 }
 
-bool DisplaySection(WORD num)
-{
 
-	return true;
+// 读取整个文件内容到字符串
+string PETamper::AllBin()
+{
+	// 获取文件大小
+	DWORD Filesize = GetFileSize(hFile, NULL);
+	//std::string FileBin.resize(Filesize);
+	std::string FileBin;
+
+	// 调整字符串大小以容纳整个文件
+	FileBin.resize(Filesize);
+
+	// 将文件指针移动到开头
+	SetFilePointer(hFile, 0, 0, NULL);
+
+	// 读取整个文件内容
+	if (!ReadFile(hFile, FileBin.data(), Filesize, NULL, NULL))
+	{
+		qDebug() << "ReadFileError at SHOWSOURCEHEX" << GetLastError();
+		return 0;
+	}
+
+	// 添加字符串结束符
+	
+	FileBin += '\0';
+	return FileBin;
 }
 
 /*
@@ -484,4 +500,20 @@ bool AtomTamper(PVOID Struct, LONG Point, unsigned char* buffer, int size)  //ob
 */
 
 
+QString StdStringToStructHexQString(std::string str)
+{
+	QByteArray byteArray(str.data(), str.size());
 
+
+	QString hexString = byteArray.toHex(' ').toUpper();
+
+	QString StructHexString;
+	for (int i = 0; i < hexString.size(); i++)
+	{
+		StructHexString += hexString[i];
+		if ((i + 1) % 48 == 0)
+			StructHexString += '\n';
+
+	}
+	return StructHexString;
+}

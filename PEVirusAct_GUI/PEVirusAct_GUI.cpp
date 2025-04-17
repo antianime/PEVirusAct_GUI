@@ -1,40 +1,37 @@
 #include "PEVirusAct_GUI.h"
+#include"SonPage.h"
 
 PEVirusAct_GUI::PEVirusAct_GUI(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
 
-    connect(ui.OpenFile, &QAction::triggered, this, &PEVirusAct_GUI::OpenFileAndInitial);
+    connect(ui.OpenFile, &QAction::triggered, this, &PEVirusAct_GUI::OpenFileAndCreateSonPage);
+
 }
 
 PEVirusAct_GUI::~PEVirusAct_GUI()
 {}
 
-int PEVirusAct_GUI::OpenFileAndInitial()
+int PEVirusAct_GUI::OpenFileAndCreateSonPage()
 {
     //Open File
     QString temp = u8"选择文件";
-    //QString temp = QString::fromUtf8("选择文件");
     QString FileName = QFileDialog::getOpenFileName(this, temp, "", "All Files (*)");
     //QString FileName = QFileDialog::getOpenFileName(this, "选择文件", "", "All Files (*)");
-    //ui.TestLine->setText(FileName);
 
-    //std::cout << FileName.toStdString() << std::endl;
+    SonPage* sonPage = new SonPage(this, FileName);
 
-    //initial : Read File
+	for (int i = FileName.size() - 1; i >= 0; i--)
+	{
+		if (FileName[i] == '/')
+		{
+            FileName = FileName.mid(i + 1);
+			break;
+		}
+	}
+    ui.tabWidget->addTab(sonPage, FileName);
+    //qDebug() << "test";
 
-    PETamper pt(FileName.toStdString());
-    //temp.fromLocal8Bit(reinterpret_cast<const char*>(&pt.idh.e_magic), 2);
-    //ui.TestBlock->setText(QString::number(pt.idh.e_magic));
-    //ui.TestLine->setText(temp);
-    qDebug() << "test";
-
-    return 0;
-}
-
-int PEVirusAct_GUI::MakeAssembly(HANDLE hFile)
-{
-    pt.Assembly(hFile);
     return 0;
 }
