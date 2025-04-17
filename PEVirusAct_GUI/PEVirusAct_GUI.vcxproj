@@ -92,15 +92,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="SonPage.cpp" />
     <QtRcc Include="PEVirusAct_GUI.qrc" />
     <QtUic Include="PEVirusAct_GUI.ui" />
     <QtMoc Include="PEVirusAct_GUI.h" />
     <ClCompile Include="PETamper_funcs.cpp" />
     <ClCompile Include="PEVirusAct_GUI.cpp" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="SonPage.ui" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fh.h" />
+    <ClInclude Include="PETamper.h" />
+    <ClInclude Include="x64\Debug\qt\uic\ui_SonPage.h" />
+    <QtMoc Include="SonPage.h" />
     <ClInclude Include="x64\Debug\qt\uic\ui_PEVirusAct_GUI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
