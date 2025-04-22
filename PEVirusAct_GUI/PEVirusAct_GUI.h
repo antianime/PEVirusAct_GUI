@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 
 #include<iostream>
@@ -13,12 +13,8 @@ public:
     PEVirusAct_GUI(QWidget *parent = nullptr);
     ~PEVirusAct_GUI();
 
-    int OpenFileAndCreateSonPage();     //Ìí¼Ó°´Å¥
+    int OpenFileAndCreateSonPage();     //æ·»åŠ æŒ‰é’®
 	
-
-
-    
-
 private:
     Ui::PEVirusAct_GUIClass ui;
 };

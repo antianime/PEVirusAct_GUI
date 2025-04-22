@@ -1,8 +1,8 @@
-#include "PEVirusAct_GUI.h"
-#include <QtWidgets/QApplication>           // °üº¬QtÓ¦ÓÃ³ÌÐòÀàÍ·ÎÄ¼þ
+ï»¿#include "PEVirusAct_GUI.h"
+#include <QtWidgets/QApplication>           // åŒ…å«Qtåº”ç”¨ç¨‹åºç±»å¤´æ–‡ä»¶
 #include <QFont>
 
-// Ç¿ÖÆÊ¹ÓÃUTF-8±àÂëÖ´ÐÐ×Ö·û¼¯£¨MSVC±àÒëÆ÷×¨ÓÃÖ¸Áî£©
+// å¼ºåˆ¶ä½¿ç”¨UTF-8ç¼–ç æ‰§è¡Œå­—ç¬¦é›†ï¼ˆMSVCç¼–è¯‘å™¨ä¸“ç”¨æŒ‡ä»¤ï¼‰
 #pragma execution_character_set("utf-8")
 
 int main(int argc, char *argv[])
@@ -10,23 +10,23 @@ int main(int argc, char *argv[])
     //QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
 
-    // ´´½¨QtÓ¦ÓÃ³ÌÐò¶ÔÏó£¬¹ÜÀíÕû¸öÓ¦ÓÃ³ÌÐòµÄÉúÃüÖÜÆÚ
+    // åˆ›å»ºQtåº”ç”¨ç¨‹åºå¯¹è±¡ï¼Œç®¡ç†æ•´ä¸ªåº”ç”¨ç¨‹åºçš„ç”Ÿå‘½å‘¨æœŸ
     QApplication a(argc, argv);
 
 
-    // ÉèÖÃÖ§³ÖÖÐÎÄµÄ×ÖÌå
+    // è®¾ç½®æ”¯æŒä¸­æ–‡çš„å­—ä½“
     QFont font;
-    font.setFamily("Microsoft YaHei"); // Î¢ÈíÑÅºÚ
+    font.setFamily("Microsoft YaHei"); // å¾®è½¯é›…é»‘
     a.setFont(font);
 
 
-    // ´´½¨Ö÷´°¿Ú¶ÔÏó
+    // åˆ›å»ºä¸»çª—å£å¯¹è±¡
     PEVirusAct_GUI w;
 
-    // ÏÔÊ¾Ö÷´°¿Ú
+    // æ˜¾ç¤ºä¸»çª—å£
     w.show();
 
-    // ½øÈëQtÊÂ¼þÑ­»·£¬µÈ´ýÓÃ»§½»»¥
-    // µ±Ó¦ÓÃ³ÌÐòÍË³öÊ±£¬exec()·µ»ØÒ»¸öÕûÊýÖµ
+    // è¿›å…¥Qtäº‹ä»¶å¾ªçŽ¯ï¼Œç­‰å¾…ç”¨æˆ·äº¤äº’
+    // å½“åº”ç”¨ç¨‹åºé€€å‡ºæ—¶ï¼Œexec()è¿”å›žä¸€ä¸ªæ•´æ•°å€¼
     return a.exec();
 }

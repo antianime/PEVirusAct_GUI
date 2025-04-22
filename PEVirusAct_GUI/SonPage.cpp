@@ -1,6 +1,6 @@
-#include "SonPage.h"
+Ôªø#include "SonPage.h"
 
-// DOSÕ∑◊÷∂Œ–≈œ¢£®√˚≥∆°¢¥Û–°°¢∆´“∆¡ø)
+// DOSÂ§¥Â≠óÊÆµ‰ø°ÊÅØÔºàÂêçÁß∞„ÄÅÂ§ßÂ∞è„ÄÅÂÅèÁßªÈáè)
 const std::vector< FieldInfo>IMAGE_DOS_HEADER_INFO = {
 	{"e_magic",2, 0x0},
 	{"e_cblp",2,0x2} ,                 // Bytes on last page of file
@@ -23,60 +23,97 @@ const std::vector< FieldInfo>IMAGE_DOS_HEADER_INFO = {
 	{ "e_lfanew",4,0x3C }
 };
 
-// NTÕ∑◊÷∂Œ–≈œ¢
-const std::vector<FieldInfo>Signature;
-const std::vector<FieldInfo>IMAGE_FILE_HEADER_INFO;
-const std::vector<FieldInfo>IMAGE_OPTIONAL_HEADER_INFO;
-
-const std::vector<std::vector< FieldInfo>>IMAGE_NT_HEADERS_INFO = { Signature,IMAGE_FILE_HEADER_INFO,IMAGE_OPTIONAL_HEADER_INFO };
 
 
-const std::vector< FieldInfo> IMAGE_SECTION_HEADERS_INFO = {
-	{"Name",8,},
-	{""},
+// NTÂ§¥Á≠æÂêç‰ø°ÊÅØ
+const std::vector<FieldInfo> Signature = {
+    {"Signature", 4, 0x0}
+};
+
+// Êñá‰ª∂Â§¥Â≠óÊÆµ‰ø°ÊÅØ
+const std::vector<FieldInfo> IMAGE_FILE_HEADER_INFO = {
+    {"Machine", 2, 0x0},
+    {"NumberOfSections", 2, 0x2},
+    {"TimeDateStamp", 4, 0x4},
+    {"PointerToSymbolTable", 4, 0x8},
+    {"NumberOfSymbols", 4, 0xC},
+    {"SizeOfOptionalHeader", 2, 0x10},
+    {"Characteristics", 2, 0x12}
+};
+
+
+// ÂèØÈÄâÂ§¥Â≠óÊÆµ‰ø°ÊÅØ (64‰Ωç)
+const std::vector<FieldInfo> IMAGE_OPTIONAL_HEADER_INFO = {
+    {"Magic", 2, 0x0},
+    {"MajorLinkerVersion", 1, 0x2},
+    {"MinorLinkerVersion", 1, 0x3},
+    {"SizeOfCode", 4, 0x4},
+    {"SizeOfInitializedData", 4, 0x8},
+    {"SizeOfUninitializedData", 4, 0xC},
+    {"AddressOfEntryPoint", 4, 0x10},
+    {"BaseOfCode", 4, 0x14},
+    {"ImageBase", 8, 0x18},
+    {"SectionAlignment", 4, 0x20},
+    {"FileAlignment", 4, 0x24},
+    {"MajorOperatingSystemVersion", 2, 0x28},
+    {"MinorOperatingSystemVersion", 2, 0x2A},
+    {"MajorImageVersion", 2, 0x2C},
+    {"MinorImageVersion", 2, 0x2E},
+    {"MajorSubsystemVersion", 2, 0x30},
+    {"MinorSubsystemVersion", 2, 0x32},
+    {"Win32VersionValue", 4, 0x34},
+    {"SizeOfImage", 4, 0x38},
+    {"SizeOfHeaders", 4, 0x3C},
+    {"CheckSum", 4, 0x40},
+    {"Subsystem", 2, 0x44},
+    {"DllCharacteristics", 2, 0x46},
+    {"SizeOfStackReserve", 8, 0x48},
+    {"SizeOfStackCommit", 8, 0x50},
+    {"SizeOfHeapReserve", 8, 0x58},
+    {"SizeOfHeapCommit", 8, 0x60},
+    {"LoaderFlags", 4, 0x68},
+    {"NumberOfRvaAndSizes", 4, 0x6C}
 };
 
 
 
 
+// Êï∞ÊçÆÁõÆÂΩïÂ≠óÊÆµ‰ø°ÊÅØ
+const std::vector<FieldInfo> IMAGE_DATA_DIRECTORY_INFO = {
+	{"Export Table", 8, 0x0},
+	{"Import Table", 8, 0x8},
+	{"Resource Table", 8, 0x10},
+	{"Exception Table", 8, 0x18},
+	{"Certificate Table", 8, 0x20},
+	{"Base Relocation Table", 8, 0x28},
+	{"Debug", 8, 0x30},
+	{"Architecture", 8, 0x38},
+	{"Global Ptr", 8, 0x40},
+	{"TLS Table", 8, 0x48},
+	{"Load Config Table", 8, 0x50},
+	{"Bound Import", 8, 0x58},
+	{"IAT", 8, 0x60},
+	{"Delay Import Descriptor", 8, 0x68},
+	{"CLR Runtime Header", 8, 0x70},
+	{"Reserved", 8, 0x78}
+};
 
-// ÃÌº”––Õ¨≤Ωπ¶ƒ‹
-int SonPage::syncLineScrolling()
-{
-    // º∆À„16Ω¯÷∆¥∞ø⁄√ø––∏ﬂ∂»
-    int hexLineHeight = ui.SourceTextHex->fontMetrics().lineSpacing();
-    
-    // º∆À„◊÷∑˚¥∞ø⁄√ø––∏ﬂ∂»
-    int charLineHeight = ui.SourceTextChar->fontMetrics().lineSpacing();
-    
-    // 16Ω¯÷∆¥∞ø⁄πˆ∂Ø ±
-	connect(ui.SourceTextHex->verticalScrollBar(), &QScrollBar::valueChanged, this,
-		[=](int value) {
-			// º∆À„∂‘”¶µƒ––∫≈
-			int lineNumber = value / hexLineHeight;
-			// …Ë÷√◊÷∑˚¥∞ø⁄µƒπˆ∂ØŒª÷√
-			ui.SourceTextChar->verticalScrollBar()->setValue(lineNumber * charLineHeight);
-		});
-    
-    // ◊÷∑˚¥∞ø⁄πˆ∂Ø ±
-	connect(ui.SourceTextChar->verticalScrollBar(), &QScrollBar::valueChanged,
-		[=](int value) {
-			// º∆À„∂‘”¶µƒ––∫≈
-			int lineNumber = value / charLineHeight;
-			// …Ë÷√16Ω¯÷∆¥∞ø⁄µƒπˆ∂ØŒª÷√
-			ui.SourceTextHex->verticalScrollBar()->setValue(lineNumber * hexLineHeight);
-		});
-
-	return 0;
-}
+// ËäÇË°®Â≠óÊÆµ‰ø°ÊÅØ
+const std::vector<FieldInfo> IMAGE_SECTION_HEADER_INFO = {
+    {"Name", 8, 0x0},
+    {"VirtualSize", 4, 0x8},
+    {"VirtualAddress", 4, 0xC},
+    {"SizeOfRawData", 4, 0x10},
+    {"PointerToRawData", 4, 0x14},
+    {"PointerToRelocations", 4, 0x18},
+    {"PointerToLinenumbers", 4, 0x1C},
+    {"NumberOfRelocations", 2, 0x20},
+    {"NumberOfLinenumbers", 2, 0x22},
+    {"Characteristics", 4, 0x24}
+};
 
 
 
-
-QString StringTransform(std::string str,int )
-{
-	return 0;
-}
 
 QString StdStringToStructHexQString(std::string str)
 {
@@ -111,30 +148,45 @@ int SonPage::ScrollInitial()
 SonPage::SonPage(QWidget *parent,QString FileName)
 	: QWidget(parent)
 {
-	//qDebug() << FileName;
-	//qDebug() << FileName.toStdString().c_str();
+
 	HANDLE hFile = CreateFileA((LPCSTR)(FileName.toStdString().c_str()), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == NULL)
+	{
+		QMessageBox::critical(this, "ÈîôËØØ", "Êñá‰ª∂ËØªÂèñÂ§±Ë¥•");
+		return;
+	}
 
 	ppt = new PETamper(hFile);
 	FilePath = FileName;
 	ui.setupUi(this);
-	FieldTreeInitial();
+	MakeTree(ui.SourceFieldTree);
+	MakeTree(ui.TargetFieldTree);
+	SourceFieldTreeInitial();
+	TargetFieldTreeInitial();
 	ShowSource();
 	ShowTarget();
 	ScrollInitial();
-	//SlotsInitial();
+
+	//FieldTreeAdjust();
+
+	connect(ui.ShellcodeTamper, &QPushButton::clicked, this, &SonPage::ShellcodeTamper);
 
 
-	// »∑±£¡Ω∏ˆ¥∞ø⁄ π”√œ‡Õ¨µƒ◊÷ÃÂ∫Õ––∏ﬂ
-    //Font monoFont("Courier New", 10);
-    //ui.SourceTextHex->setFont(monoFont);
-    //ui.SourceTextChar->setFont(monoFont);
+
+	connect(ui.MakeAssembly, &QPushButton::clicked, this, [this]() {
+		QString Title = "ÈÄâÊã©ËæìÂá∫‰ΩçÁΩÆ";
+		QString FileName = QFileDialog::getSaveFileName(this, Title, "", "All Files (*)");
+		HANDLE hFile = CreateFileW((LPCWSTR)FileName.data(), GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		MakeAssembly(hFile);
+		CloseHandle(hFile);
+		});
 
 
 }
 
 SonPage::~SonPage()
 {
+
 	delete ppt;
 }
 
@@ -142,7 +194,8 @@ int SonPage::FieldModify(int position, int address, int size, std::string buffer
 {
 	if (buffer.size() > size)
 	{
-		qDebug() << "Buffer size is larger than the specified size.";
+		QMessageBox::critical(this, "ÈîôËØØ", "ÁºìÂÜ≤Âå∫ËøáÂ§ß");
+		//qDebug() << "Buffer size is larger than the specified size.";
 		return 1;
 	}
 
@@ -152,113 +205,220 @@ int SonPage::FieldModify(int position, int address, int size, std::string buffer
 	cursor.setPosition(address);
 	cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, size);
 	cursor.insertText(QString::fromStdString(buffer));
-	//cursor.selectedText();
 
 
 	return 0;
 }
 
-int SonPage::FieldTreeInitial()
+int SonPage::MakeTree(QTreeView* tree)
 {
-	//
-	//	”…”⁄ƒø«∞C++√ª”–‘≠…˙∑¥…‰ª˙÷∆£¨∂¯À—À˜µΩ µœ÷∑¥…‰µƒ¥˙¬Î¥Û∏≈°∞≤ªµΩ“ª∞Ÿ––°±£¨◊Ó∫Ûæˆ∂®‘⁄≤ª  ”√µ⁄»˝∑Ωø‚µƒ«∞Ã·œ¬≤…»°”≤±‡¬Îµƒ∑Ω Ω±È¿˙Ω·ππÃÂ£¨À˘“‘Ω”œ¬¿¥µƒ¥˙¬Îª·∑«≥£≥Û¬™
-	//
-	// 
-	// 
-	// 
-	// 
-	// 
-	// 
+	QChar hc = 'h';
+	QString tempqstr;
+	int tempaddress = 0;
+	tree->setUpdatesEnabled(false);
+	tree->setUniformRowHeights(true);
 
-
-	//…Ë÷√Õ∑
-	QStandardItemModel* qmodel = new QStandardItemModel(ui.SourceFieldTree);
-	//qmodel->setHorizontalHeaderLabels(QStringList() << "√˚≥∆" << "÷µ" << "µÿ÷∑" << "¥Û–°");
-	qmodel->setHorizontalHeaderLabels(QStringList() << "Name" << "Value" << "Address" << "Size");// ‰»Î÷–Œƒ”–Œ Ã‚
-
-	//QVector<BYTE>buffer;
+	//ËÆæÁΩÆÂ§¥
+	QStandardItemModel* qmodel = new QStandardItemModel(tree);
+	qmodel->setHorizontalHeaderLabels(QStringList() << QStringLiteral("ÂêçÁß∞") << QStringLiteral("ÂÄº") << QStringLiteral("Âú∞ÂùÄ") << QStringLiteral("Â§ßÂ∞è"));
 	std::string buffer;
 
 	//IMAGE_DOS_HEADER
 	QList<QStandardItem*> idh_Header(4);
-	idh_Header[0] = new QStandardItem("IMAGE_DOS_HEADER");
+	idh_Header[0] = new QStandardItem(QStringLiteral("IMAGE_DOS_HEADER"));
 	idh_Header[1] = new QStandardItem("");
-	idh_Header[2] = new QStandardItem(QString("%1").arg(0, 0, 16).toUpper() + QString("h"));
-	idh_Header[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_DOS_HEADER), 0, 16).toUpper() + QString("h"));
+	idh_Header[2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+	idh_Header[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_DOS_HEADER), 0, 16).toUpper() + hc);
 	qmodel->appendRow(idh_Header);
 
-	QVector<QList<QStandardItem*>> idh_Field(IMAGE_DOS_HEADER_INFO.size());
 	for (int i = 0; i < IMAGE_DOS_HEADER_INFO.size(); i++)
 	{
-		idh_Field[i].resize(4);
-		idh_Field[i][0] = new QStandardItem(QString::fromStdString(IMAGE_DOS_HEADER_INFO[i].field));
+		QList<QStandardItem*> idh_Field(4);
+		idh_Field[0] = new QStandardItem(QString::fromStdString(IMAGE_DOS_HEADER_INFO[i].field));
 		buffer.resize(IMAGE_DOS_HEADER_INFO[i].size);
-		SetFilePointer(ppt->hFile, 0 + IMAGE_DOS_HEADER_INFO[i].offset, 0, 0);
-		if (!ReadFile(ppt->hFile, buffer.data(), IMAGE_DOS_HEADER_INFO[i].size, NULL, NULL))
-		{
-			qDebug() << "ReadFile failed at IMAGE_DOS_HEADER ";
-			qDebug() << "GetLastError: " << GetLastError();
-		}
-		/*
-		if (idh_Field[i][0]->text() == "e_magic" || idh_Field[i][0]->text() == "e_lfanew")
-			idh_Field[i][1] = new QStandardItem(QString("%1").arg(*reinterpret_cast<int*>(buffer.data()), 0, 16).toUpper() + QString("h"));
-		else
-			idh_Field[i][1] = new QStandardItem(QString::number(*reinterpret_cast<int*>(buffer.data())));
-		*/
-		idh_Field[i][1] = new QStandardItem(QString("%1").arg(*reinterpret_cast<int*>(buffer.data()), 0, 16).toUpper() + QString("h"));
-		idh_Field[i][2] = new QStandardItem(QString("%1").arg(0 + IMAGE_DOS_HEADER_INFO[i].offset, 0, 16).toUpper() + QString("h"));
-		idh_Field[i][3] = new QStandardItem(QString("%1").arg(0 + IMAGE_DOS_HEADER_INFO[i].size, 0, 16).toUpper() + QString("h"));
-
-		idh_Header[0]->appendRow(idh_Field[i]);
-
-		/*
-		
-		for (int j = 0; j < 4; j++)
-		{
-			connect(idh_Field[i][j],QStandardItem::)
-		}
-		
-		
-		*/
-		
+		memmove(buffer.data(), (PVOID)((unsigned long long) & ppt->idh + IMAGE_DOS_HEADER_INFO[i].offset), IMAGE_DOS_HEADER_INFO[i].size);
+		idh_Field[1] = new QStandardItem(QString("%1").arg(*reinterpret_cast<unsigned long long*>(buffer.data()), 0, 16).toUpper() + hc);
+		idh_Field[2] = new QStandardItem(QString("%1").arg(IMAGE_DOS_HEADER_INFO[i].offset, 0, 16).toUpper() + hc);
+		idh_Field[3] = new QStandardItem(QString("%1").arg(0 + IMAGE_DOS_HEADER_INFO[i].size, 0, 16).toUpper() + hc);
+		idh_Header[0]->appendRow(idh_Field);
 	}
 
+	//DOS Stub
+	QList<QStandardItem*> ids_Header(4);
+	ids_Header[0] = new QStandardItem(QStringLiteral("IMAGE_DOS_STUB"));
+	ids_Header[1] = new QStandardItem("");
+	ids_Header[2] = new QStandardItem(QString("%1").arg(tempaddress = sizeof(IMAGE_DOS_HEADER), 0, 16).toUpper() + hc);
+	ids_Header[3] = new QStandardItem(QString("%1").arg(ppt->stubbuffer.size(), 0, 16).toUpper() + hc);
+	qmodel->appendRow(ids_Header);
 
 
-	
 	//IMAGE_NT_HEADERS
 	QList<QStandardItem*> inh_Header(4);
-	inh_Header[0] = new QStandardItem("IMAGE_NT_HEADERS");
+	inh_Header[0] = new QStandardItem(QStringLiteral("IMAGE_NT_HEADERS"));
 	inh_Header[1] = new QStandardItem("");
-	inh_Header[2] = new QStandardItem(QString("%1").arg(0 + sizeof(IMAGE_DOS_HEADER), 0, 16).toUpper() + QString("h"));
-	inh_Header[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_NT_HEADERS), 0, 16).toUpper() + QString("h"));
+	inh_Header[2] = new QStandardItem(QString("%1").arg(tempaddress = ppt->idh.e_lfanew, 0, 16).toUpper() + hc);
+	inh_Header[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_NT_HEADERS), 0, 16).toUpper() + hc);
 	qmodel->appendRow(inh_Header);
 
-	QVector<QList<QStandardItem*>> inh_Field(IMAGE_DOS_HEADER_INFO.size());
-	for (int i = 0; i < IMAGE_DOS_HEADER_INFO.size(); i++)
+	QList<QStandardItem*>pSignature(4);
+	pSignature[0] = new QStandardItem(QStringLiteral("DWORD Signature"));
+	pSignature[1] = new QStandardItem(QString("%1").arg(ppt->inh.Signature, 0, 16).toUpper() + hc);
+	pSignature[2] = new QStandardItem(QString("%1").arg(tempaddress + Signature[0].offset, 0, 16).toUpper() + hc);
+	pSignature[3] = new QStandardItem(QString("%1").arg(Signature[0].size, 0, 16).toUpper() + hc);
+	inh_Header[0]->appendRow(pSignature);
+
+	//IMAGE_FILE_HEADER
+	QList<QStandardItem*>ifh_Header(4);
+	ifh_Header[0] = new QStandardItem(QStringLiteral("IMAGE_FILE_HEADER"));
+	ifh_Header[1] = new QStandardItem("");
+	ifh_Header[2] = new QStandardItem(QString("%1").arg(tempaddress += Signature[0].size, 0, 16).toUpper() + hc);
+	ifh_Header[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_FILE_HEADER), 0, 16).toUpper() + hc);
+	inh_Header[0]->appendRow(ifh_Header);
+
+	for (int i = 0; i < IMAGE_FILE_HEADER_INFO.size(); i++)
 	{
-		inh_Field[i].resize(4);
-		inh_Field[i][0] = new QStandardItem(QString::fromStdString(IMAGE_DOS_HEADER_INFO[i].field));
-		inh_Field[i][1] = new QStandardItem("");
-		inh_Field[i][2] = new QStandardItem(QString("%1").arg(0 + IMAGE_DOS_HEADER_INFO[i].offset, 0, 16).toUpper() + QString("h"));
-		inh_Field[i][3] = new QStandardItem(QString("%1").arg(0 + IMAGE_DOS_HEADER_INFO[i].size, 0, 16).toUpper() + QString("h"));
+		QList<QStandardItem*> ifh_Field(4);
 
-		inh_Header[0]->appendRow(inh_Field[i]);
+		ifh_Field[0] = new QStandardItem(QString::fromStdString(IMAGE_FILE_HEADER_INFO[i].field));
+		buffer.resize(IMAGE_FILE_HEADER_INFO[i].size);
+		memmove(buffer.data(), (PVOID)((unsigned long long) & ppt->inh.FileHeader + IMAGE_FILE_HEADER_INFO[i].offset), IMAGE_FILE_HEADER_INFO[i].size);
+		ifh_Field[1] = new QStandardItem(QString("%1").arg(*reinterpret_cast<unsigned long long*>(buffer.data()), 0, 16).toUpper() + hc);
+		ifh_Field[2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+		ifh_Field[3] = new QStandardItem(QString("%1").arg(IMAGE_FILE_HEADER_INFO[i].size, 0, 16).toUpper() + hc);
+		tempaddress += IMAGE_FILE_HEADER_INFO[i].size;
+		ifh_Header[0]->appendRow(ifh_Field);
 	}
-	
 
-	
+	//IMAGE_POTIONAL_HEADER
+	QList<QStandardItem*>ioh_Header(4);
+	ioh_Header[0] = new QStandardItem(QStringLiteral("IMAGE_OPTIONAL_HEADER"));
+	ioh_Header[1] = new QStandardItem("");
+	ioh_Header[2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+	ioh_Header[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_OPTIONAL_HEADER), 0, 16).toUpper() + hc);
+	inh_Header[0]->appendRow(ioh_Header);
 
-	
-	
+	for (int i = 0; i < IMAGE_OPTIONAL_HEADER_INFO.size(); i++)
+	{
+		QList<QStandardItem*> ioh_Field(4);
+		ioh_Field[0] = new QStandardItem(QString::fromStdString(IMAGE_OPTIONAL_HEADER_INFO[i].field));
+		buffer.resize(IMAGE_OPTIONAL_HEADER_INFO[i].size);
+		memmove(buffer.data(), (PVOID)((unsigned long long) & ppt->inh.OptionalHeader + IMAGE_OPTIONAL_HEADER_INFO[i].offset), IMAGE_OPTIONAL_HEADER_INFO[i].size);
+		ioh_Field[1] = new QStandardItem(QString("%1").arg(*reinterpret_cast<unsigned long long*>(buffer.data()), 0, 16).toUpper() + hc);
+		ioh_Field[2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+		ioh_Field[3] = new QStandardItem(QString("%1").arg(IMAGE_OPTIONAL_HEADER_INFO[i].size, 0, 16).toUpper() + hc);
+		tempaddress += IMAGE_OPTIONAL_HEADER_INFO[i].size;
+		ioh_Header[0]->appendRow(ioh_Field);
+	}
+	QList<QStandardItem*>idd_Header(4);
+	idd_Header[0] = new QStandardItem(QStringLiteral("IMAGE_DATA_DIRECTORY"));
+	idd_Header[1] = new QStandardItem("");
+	idd_Header[2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+	idd_Header[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_DATA_DIRECTORY) * IMAGE_DATA_DIRECTORY_INFO.size(), 0, 16).toUpper() + hc);
+	ioh_Header[0]->appendRow(idd_Header);
+	QVector< QList<QStandardItem*>>idd_Field(IMAGE_DATA_DIRECTORY_INFO.size());
+	for (int i = 0; i < IMAGE_DATA_DIRECTORY_INFO.size(); i++)
+	{
+		QList<QStandardItem*> idd_Field(4);
+		idd_Field[0] = new QStandardItem(QString::fromStdString(IMAGE_DATA_DIRECTORY_INFO[i].field));
+		idd_Field[1] = new QStandardItem("");
+		idd_Field[2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+		idd_Field[3] = new QStandardItem(QString("%1").arg(IMAGE_DATA_DIRECTORY_INFO[i].size, 0, 16).toUpper() + hc);
+		idd_Header[0]->appendRow(idd_Field);
 
-	ui.SourceFieldTree->setModel(qmodel);
-	
-	//…Ë÷√µ„ª˜∫Û∏ﬂ¡¡œ‘ æ«¯”Ú
+		QVector<QList<QStandardItem*>>idd_Field_2(2);
+		idd_Field_2[0].resize(4);
+		idd_Field_2[0][0] = new QStandardItem(QStringLiteral("DWORD VirtualAddress"));
+		idd_Field_2[0][1] = new QStandardItem(QString("%1").arg(ppt->inh.OptionalHeader.DataDirectory[i].VirtualAddress, 0, 16).toUpper() + hc);
+		idd_Field_2[0][2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+		idd_Field_2[0][3] = new QStandardItem(QString("%1").arg(sizeof(ppt->inh.OptionalHeader.DataDirectory[i].VirtualAddress), 0, 16).toUpper() + hc);
+		idd_Field[0]->appendRow(idd_Field_2[0]);
+		tempaddress += sizeof(ppt->inh.OptionalHeader.DataDirectory[i].VirtualAddress);
+
+		idd_Field_2[1].resize(4);
+		idd_Field_2[1][0] = new QStandardItem(QStringLiteral("DWORD Size"));
+		idd_Field_2[1][1] = new QStandardItem(QString("%1").arg(ppt->inh.OptionalHeader.DataDirectory[i].Size, 0, 16).toUpper() + hc);
+		idd_Field_2[1][2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+		idd_Field_2[1][3] = new QStandardItem(QString("%1").arg(sizeof(ppt->inh.OptionalHeader.DataDirectory[i].Size), 0, 16).toUpper() + hc);
+		idd_Field[0]->appendRow(idd_Field_2[1]);
+		tempaddress += sizeof(ppt->inh.OptionalHeader.DataDirectory[i].Size);
+	}
+
+	//IMAGE_SECTION_HEADERS
+	QList<QStandardItem*> ish_Header(4);
+	ish_Header[0] = new QStandardItem(QStringLiteral("IMAGE_SECTION_HEADERS"));
+	ish_Header[1] = new QStandardItem("");
+	ish_Header[2] = new QStandardItem(QString("%1").arg(ppt->idh.e_lfanew + sizeof(IMAGE_NT_HEADERS), 0, 16).toUpper() + hc);
+	ish_Header[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_SECTION_HEADER) * ppt->NumberOfSections, 0, 16).toUpper() + hc);
+	qmodel->appendRow(ish_Header);
+	for (int i = 0; i < ppt->NumberOfSections; i++)
+	{
+		QList<QStandardItem*> ish_Field(4);
+		ish_Field[0] = new QStandardItem(QString("IMAGE_SECTION_HEADER[%1]").arg(i));
+		ish_Field[1] = new QStandardItem(*reinterpret_cast<char*>(ppt->SectionNames[i].data()));
+		ish_Field[2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+		ish_Field[3] = new QStandardItem(QString("%1").arg(sizeof(IMAGE_SECTION_HEADER), 0, 16).toUpper() + hc);
+		ish_Header[0]->appendRow(ish_Field);
+
+		for (int j = 0; j < IMAGE_SECTION_HEADER_INFO.size(); j++)
+		{
+			QList<QStandardItem*> ish_Field_2(4);
+			ish_Field_2[0] = new QStandardItem(QString::fromStdString(IMAGE_SECTION_HEADER_INFO[j].field));
+			buffer.resize(IMAGE_SECTION_HEADER_INFO[j].size);
+			memmove(buffer.data(), (PVOID)((unsigned long long) (&ppt->SectionHeaders[i]) + IMAGE_SECTION_HEADER_INFO[j].offset), IMAGE_SECTION_HEADER_INFO[j].size);
+			if (j == 0)
+				ish_Field_2[1] = new QStandardItem(QString::fromStdString(buffer));
+			else
+				ish_Field_2[1] = new QStandardItem(QString("%1").arg(*reinterpret_cast<unsigned int*>(buffer.data()), 0, 16).toUpper() + hc);
+			ish_Field_2[2] = new QStandardItem(QString("%1").arg(tempaddress, 0, 16).toUpper() + hc);
+			ish_Field_2[3] = new QStandardItem(QString("%1").arg(IMAGE_SECTION_HEADER_INFO[j].size, 0, 16).toUpper() + hc);
+			ish_Field[0]->appendRow(ish_Field_2);
+			tempaddress += IMAGE_SECTION_HEADER_INFO[j].size;
+		}
+	}
+
+
+	//IMAGE_SECTION_DATAS
+	QVector<QList<QStandardItem*>> isd_Header(ppt->NumberOfSections);
+	for (int i = 0; i < ppt->NumberOfSections; i++)
+	{
+		isd_Header[i].resize(4);
+		isd_Header[i][0] = new QStandardItem(QString("IMAGE_SECTION_DATA[%1]").arg(i));
+		isd_Header[i][1] = new QStandardItem(reinterpret_cast<char*>(ppt->SectionNames[i].data()));
+		isd_Header[i][2] = new QStandardItem(QString("%1").arg(ppt->SectionHeaders[i].PointerToRawData, 0, 16).toUpper() + hc);
+		isd_Header[i][3] = new QStandardItem(QString("%1").arg(ppt->SectionHeaders[i].SizeOfRawData, 0, 16).toUpper() + hc);
+		qmodel->appendRow(isd_Header[i]);
+	}
+
+	tree->setModel(qmodel);
+
+	return 0;
+}
+
+int SonPage::SourceFieldTreeInitial()
+{
 	//
-	//–‘ƒ‹–Ë“™”≈ªØ
+	//	Áî±‰∫éÁõÆÂâçC++Ê≤°ÊúâÂéüÁîüÂèçÂ∞ÑÊú∫Âà∂ÔºåËÄåÊêúÁ¥¢Âà∞ÂÆûÁé∞ÂèçÂ∞ÑÁöÑ‰ª£Á†ÅÂ§ßÊ¶Ç‚Äú‰∏çÂà∞‰∏ÄÁôæË°å‚ÄùÔºåÊúÄÂêéÂÜ≥ÂÆöÂú®‰∏çÈÄÇÁî®Á¨¨‰∏âÊñπÂ∫ìÁöÑÂâçÊèê‰∏ãÈááÂèñÁ°¨ÁºñÁ†ÅÁöÑÊñπÂºèÈÅçÂéÜÁªìÊûÑ‰ΩìÔºåÊâÄ‰ª•Êé•‰∏ãÊù•ÁöÑ‰ª£Á†Å‰ºöÈùûÂ∏∏‰∏ëÈôã
+	//
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
 
-	connect(ui.SourceFieldTree->selectionModel(), &QItemSelectionModel::selectionChanged, this, [=](const QItemSelection& selected, const QItemSelection& deselected) {
+	//ui.SourceFieldTree->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	
+	QStandardItemModel* qmodel = qobject_cast<QStandardItemModel*>(ui.SourceFieldTree->model());
+	ui.SourceFieldTree->setUpdatesEnabled(true);
+	ui.SourceFieldTree->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+	
+	//ËÆæÁΩÆÁÇπÂáªÂêéÈ´ò‰∫ÆÊòæÁ§∫Âå∫Âüü
+	//
+	//ÊÄßËÉΩÈúÄË¶Å‰ºòÂåñ
+
+	connect(ui.SourceFieldTree->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this, qmodel](const QItemSelection& selected, const QItemSelection& deselected) {
 		Q_UNUSED(selected);
 		Q_UNUSED(deselected);
 
@@ -267,65 +427,117 @@ int SonPage::FieldTreeInitial()
 		QTextCharFormat format;
 		QModelIndexList IndexList = ui.SourceFieldTree->selectionModel()->selectedIndexes();
 
-		format.setBackground(QColor("white"));
-		HexCursor.select(QTextCursor::Document);
-		HexCursor.mergeCharFormat(format);
-		CharCursor.select(QTextCursor::Document);
-		CharCursor.mergeCharFormat(format);
+		if (SourceHighLight.HexPos != -1)
+		{
+			format.setBackground(Qt::white);
+
+			HexCursor.setPosition(SourceHighLight.HexPos);
+			HexCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, SourceHighLight.HexLength);
+			HexCursor.mergeCharFormat(format);
+
+			CharCursor.setPosition(SourceHighLight.CharPos);
+			CharCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, SourceHighLight.CharLength);
+			CharCursor.mergeCharFormat(format);
+		}
 
 
 		if (!IndexList.isEmpty())
 		{
-			//HexText
 			QModelIndex index = IndexList.first();
-			QModelIndex tempindex = IndexList.first();
-			int position = 0;
-			while (tempindex.isValid() && tempindex.parent().isValid())
-				tempindex = tempindex.parent();
-			QString ParentName = qmodel->itemFromIndex(tempindex)->text();
-			if (ParentName == "IMAGE_DOS_HEADER")
-				position = 0;
-			else if (ParentName == "IMAGE_NT_HEADERS")
-				position = ppt->idh.e_lfanew;
-			//else if()
 			QString temp;
+
 			temp = qmodel->itemFromIndex(index.siblingAtColumn(2))->text();
-			int StartPos = position + temp.left(temp.size() - 1).toInt(NULL, 16);
+			int StartPos = temp.left(temp.size() - 1).toInt(NULL, 16);
 			temp = qmodel->itemFromIndex(index.siblingAtColumn(3))->text();
 			int Length = temp.left(temp.size() - 1).toInt(NULL, 16);
 
-			HexCursor.setPosition(3 * StartPos);
-			HexCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 3 * Length - 1);
-			format.setBackground(QColor("yellow"));
+			format.setBackground(Qt::yellow);
+
+			HexCursor.setPosition(SourceHighLight.HexPos = 3 * StartPos);
+			HexCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, SourceHighLight.HexLength = 3 * Length - 1);
 			HexCursor.mergeCharFormat(format);
 
-			//CharText
+			CharCursor.setPosition(SourceHighLight.CharPos = StartPos + StartPos / 16);
+			CharCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, SourceHighLight.CharLength = Length + Length / 16);
+			CharCursor.mergeCharFormat(format);
+		}
+		});
 
-			CharCursor.setPosition(StartPos);
-			CharCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, Length);
-			//CharCursor.setPosition(StartPos + Length, QTextCursor::KeepAnchor);
-			format.setBackground(QColor("yellow"));
+	return 0;
+}
+
+int SonPage::TargetFieldTreeInitial()
+{
+	QStandardItemModel* tqmodel = qobject_cast<QStandardItemModel*>(ui.TargetFieldTree->model());
+	ui.TargetFieldTree->setUpdatesEnabled(true);
+	SetTreeEdit(ui.TargetFieldTree);
+
+	//ËÆæÁΩÆÁÇπÂáªÂêéÈ´ò‰∫ÆÊòæÁ§∫Âå∫Âüü
+
+	connect(ui.TargetFieldTree->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this, tqmodel](const QItemSelection& selected, const QItemSelection& deselected) {
+		Q_UNUSED(selected);
+		Q_UNUSED(deselected);
+
+		QTextCursor HexCursor(ui.TargetTextHex->textCursor());
+		QTextCursor CharCursor(ui.TargetTextChar->textCursor());
+		QTextCharFormat format;
+		QModelIndexList IndexList = ui.TargetFieldTree->selectionModel()->selectedIndexes();
+
+		if (TargetHighLight.HexPos != -1)
+		{
+			format.setBackground(Qt::white);
+			HexCursor.setPosition(TargetHighLight.HexPos);
+			HexCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, TargetHighLight.HexLength);
+			HexCursor.mergeCharFormat(format);
+
+			CharCursor.setPosition(TargetHighLight.CharPos);
+			CharCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, TargetHighLight.CharLength);
+			CharCursor.mergeCharFormat(format);
+		}
+
+
+		if (!IndexList.isEmpty())
+		{
+			QModelIndex index = IndexList.first();
+			QString temp;
+
+			temp = tqmodel->itemFromIndex(index.siblingAtColumn(2))->text();
+			int StartPos = temp.left(temp.size() - 1).toInt(NULL, 16);
+			temp = tqmodel->itemFromIndex(index.siblingAtColumn(3))->text();
+			int Length = temp.left(temp.size() - 1).toInt(NULL, 16);
+
+			format.setBackground(Qt::yellow);
+			HexCursor.setPosition(TargetHighLight.HexPos = 3 * StartPos);
+			HexCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, TargetHighLight.HexLength = 3 * Length - 1);
+			HexCursor.mergeCharFormat(format);
+
+			CharCursor.setPosition(TargetHighLight.CharPos = StartPos + StartPos / 16);
+			CharCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, TargetHighLight.CharLength = Length + Length / 16);
 			CharCursor.mergeCharFormat(format);
 
 		}
 		});
 
-	//◊÷∂Œ–ﬁ∏ƒ£¨’‚∏ˆ“≤“™”≈ªØ
-	connect(qmodel, &QStandardItemModel::dataChanged, this, [=](const QModelIndex& index, const QModelIndex&) {
+	
 
-		QTextCursor HexCursor(ui.SourceTextHex->textCursor());
-		QTextCursor CharCursor(ui.SourceTextChar->textCursor());
-		QTextCharFormat format;
+
+	connect(ui.TargetFieldTree, &QTreeView::doubleClicked, this, [=](const QModelIndex& index) {
+		refield = tqmodel->itemFromIndex(index)->text();
+		});
+
+
+	//Â≠óÊÆµ‰øÆÊîπÔºåËøô‰∏™‰πüË¶Å‰ºòÂåñ
+	connect(tqmodel, &QStandardItemModel::dataChanged, this, [=](const QModelIndex& index, const QModelIndex&) {
+
+		QTextCursor HexCursor(ui.TargetTextHex->textCursor());
+		QTextCursor CharCursor(ui.TargetTextChar->textCursor());
 
 		QModelIndex tempindex = index;
 		QString temp;
 		int position = 0;
 
-		temp = qmodel->itemFromIndex(index.siblingAtColumn(3))->text();
-		int Length = temp.left(temp.size() - 1).toInt(NULL, 16);
-		
 
-		temp = qmodel->itemFromIndex(index)->text();
+		temp = tqmodel->itemFromIndex(index)->text();
 		string tempbuffer = "";
 		if (temp[temp.size() - 1] == 'h')
 		{
@@ -335,24 +547,24 @@ int SonPage::FieldTreeInitial()
 			tempbuffer.resize(temp.size() / 2);
 			for (int i = 0; i < temp.size() / 2; i++)
 			{
-				if (!(temp[i] > '0' && temp[i] < '9') && !(temp[i] > 'A' && temp[i] < 'F') && !(temp[i] > 'a' && temp[i] < 'f'))
+				if (!(temp[i] >= '0' && temp[i] <= '9') && !(temp[i] >= 'A' && temp[i] <= 'F') && !(temp[i] >= 'a' && temp[i] <= 'f'))
 				{
-					qDebug() << "invalid char";
+					QMessageBox::critical(this, "ÈîôËØØ", "ÈùûÊ≥ïÂ≠óÁ¨¶");
+					tqmodel->itemFromIndex(index)->setText(refield);
 					return;
 				}
-				tempbuffer[i] = (char)(temp.mid(i, 2).toInt(NULL, 16));
+				tempbuffer[i] = (char)(temp.mid(2 * (temp.size() / 2 - i - 1), 2).toInt(NULL, 16));
 			}
-			//string buffer[];
-
 		}
 		else
 		{
 
 			for (int i = 0; i < temp.size(); i++)
 			{
-				if (!(temp[i] > '0' && temp[i] < '9'))
+				if (!(temp[i] >= '0' && temp[i] <= '9'))
 				{
-					qDebug() << "invalid char";
+					QMessageBox::critical(this, "ÈîôËØØ", "ÈùûÊ≥ïÂ≠óÁ¨¶");
+					tqmodel->itemFromIndex(index)->setText(refield);
 					return;
 				}
 
@@ -363,32 +575,39 @@ int SonPage::FieldTreeInitial()
 				tempbuffer += (unsigned char)(ull & 0xFF);
 				ull >>= 8;
 			}
-			
-		}
 
+		}
+		temp = tqmodel->itemFromIndex(index.siblingAtColumn(3))->text();
+		int Length = temp.left(temp.size() - 1).toInt(NULL, 16);
 		if (Length < tempbuffer.size())
 		{
-			qDebug() << "out of size";
+			QMessageBox::critical(this, "ÈîôËØØ", "Â≠óÁ¨¶ËøáÈïø");
+			tqmodel->itemFromIndex(index)->setText(refield);
 			return;
 		}
-		//buffer.resize(Length);
-		temp = qmodel->itemFromIndex(index.siblingAtColumn(2))->text();
-		int StartPos = position + temp.left(temp.size() - 1).toInt(NULL, 16);
+		tempbuffer.resize(Length);
+		temp = tqmodel->itemFromIndex(index.siblingAtColumn(2))->text();
+		int StartPos = temp.left(temp.size() - 1).toInt(NULL, 16);
 
 		while (tempindex.isValid() && tempindex.parent().isValid())
 			tempindex = tempindex.parent();
-		QString ParentName = qmodel->itemFromIndex(tempindex)->text();
+		QString ParentName = tqmodel->itemFromIndex(tempindex)->text();
 		if (ParentName == "IMAGE_DOS_HEADER")
 		{
 			position = 0;
-			ppt->FieldTamper(&ppt->idh, temp.toInt(NULL, 16), (char*)tempbuffer.c_str());
+			ppt->FieldTamper(&ppt->idh, StartPos - position, (char*)tempbuffer.c_str());
 		}
 		else if (ParentName == "IMAGE_NT_HEADERS")
 		{
 			position = ppt->idh.e_lfanew;
-			ppt->FieldTamper(&ppt->inh, temp.toInt(NULL, 16), (char*)tempbuffer.c_str());
+			ppt->FieldTamper(&ppt->inh, StartPos - position, (char*)tempbuffer.c_str());
 		}
-		
+		else if (ParentName == "IMAGE_SECTION_HEADERS")
+		{
+			QModelIndex ParentIndex = index.parent();
+			position = ppt->idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + ParentIndex.row() * sizeof(IMAGE_SECTION_HEADER);	//////////////
+			ppt->FieldTamper(&ppt->SectionHeaders[ParentIndex.row()], StartPos - position, (char*)tempbuffer.c_str());
+		}
 
 		HexCursor.setPosition(3 * StartPos);
 		HexCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 3 * Length - 1);
@@ -400,30 +619,56 @@ int SonPage::FieldTreeInitial()
 		});
 
 
+	return 0;
+}
+
+int Recursion(QStandardItem* qo, QStandardItemModel* model)
+{
 	
+	model->itemFromIndex(qo->index().siblingAtColumn(0))->setEditable(false);
+	model->itemFromIndex(qo->index().siblingAtColumn(2))->setEditable(false);
+	model->itemFromIndex(qo->index().siblingAtColumn(3))->setEditable(false);
+	if (qo->parent() != nullptr || qo->child(0) == nullptr)
+		model->itemFromIndex(qo->index().siblingAtColumn(1))->setEditable(true);
+	else
+	{
+		model->itemFromIndex(qo->index().siblingAtColumn(1))->setEditable(false);
+		for (int i = 0; i < qo->rowCount(); i++)
+			Recursion(qo->child(i), model);
+	}
+	return 0;
+}
+
+int SonPage::SetTreeEdit(QTreeView *tree)
+{
+	QStandardItemModel* model = (QStandardItemModel*)tree->model();
+	QStandardItem* root = model->invisibleRootItem();
+	
+	for (int i = 0; i < root->rowCount(); i++)
+	{
+		Recursion(root->child(i), model);
+	}
+
 	return 0;
 }
 
 
 
-
-
-
 int SonPage::ShowSource()
 {
-    // ªÒ»°PEŒƒº˛µƒ»´≤ø∂˛Ω¯÷∆ ˝æ›
+    // Ëé∑ÂèñPEÊñá‰ª∂ÁöÑÂÖ®ÈÉ®‰∫åËøõÂà∂Êï∞ÊçÆ
     string pptAllBinString = ppt->AllBin();
     
-    // ◊™ªªŒ™Ω·ππªØ Æ¡˘Ω¯÷∆◊÷∑˚¥Æ≤¢œ‘ æ
+    // ËΩ¨Êç¢‰∏∫ÁªìÊûÑÂåñÂçÅÂÖ≠ËøõÂà∂Â≠óÁ¨¶‰∏≤Âπ∂ÊòæÁ§∫
     ui.SourceTextHex->setText(StdStringToStructHexQString(pptAllBinString));
     
-    // ¥¶¿Ì◊÷∑˚œ‘ æ≤ø∑÷
+    // Â§ÑÁêÜÂ≠óÁ¨¶ÊòæÁ§∫ÈÉ®ÂàÜ
     QString CharStr;
     for (size_t i = 0; i < pptAllBinString.size(); i++) 
 	{
         
-        // ¥¶¿Ì0-31∫Õ127µƒ≤ªø…¥Ú”°◊÷∑˚
-		if (pptAllBinString[i] < 32 || pptAllBinString[i] == 127)
+        // Â§ÑÁêÜ0-31Âíå127ÁöÑ‰∏çÂèØÊâìÂç∞Â≠óÁ¨¶
+		if ((unsigned int)pptAllBinString[i] < 32 || (unsigned int)pptAllBinString[i] == 127)
 			CharStr += '.';
         else 
 			CharStr += QChar((unsigned char)pptAllBinString[i]);
@@ -432,7 +677,7 @@ int SonPage::ShowSource()
 			CharStr += '\n';
     }
     
-    // œ‘ æ¥¶¿Ì∫Ûµƒ◊÷∑˚
+    // ÊòæÁ§∫Â§ÑÁêÜÂêéÁöÑÂ≠óÁ¨¶
     ui.SourceTextChar->setText(CharStr);
 
     return 0;
@@ -447,24 +692,92 @@ int SonPage::ShowTarget()
 	for (size_t i = 0; i < temp.size(); i++)
 	{
 
-		// ¥¶¿Ì0-31∫Õ127µƒ≤ªø…¥Ú”°◊÷∑˚
-		if (temp[i] < 32 || temp[i] == 127)
+		// Â§ÑÁêÜ0-31Âíå127ÁöÑ‰∏çÂèØÊâìÂç∞Â≠óÁ¨¶
+		if ((unsigned int)temp[i] < 32 || (unsigned int)temp[i] == 127)
 			CharStr += '.';
 		else
-			CharStr += temp[i];
+			CharStr += QChar((unsigned char)temp[i]);
 
 		if ((i + 1) % 16 == 0)
 			CharStr += '\n';
 	}
 
-	// œ‘ æ¥¶¿Ì∫Ûµƒ◊÷∑˚
 	ui.TargetTextChar->setText(CharStr);
+	return 0;
+}
+
+int SonPage::ShellcodeTamper()
+{
+
+	QString input = QInputDialog::getText(this, "ËæìÂÖ•shellcode", "ËØ∑‰æùÁÖß0x00Êàñ00hÁöÑÊñπÂºèÔºå‰ª•','ÂàÜÈöî");
+	if (input.isEmpty())
+	{
+		QMessageBox::critical(this, "ÈîôËØØ", "shellcode‰∏∫Á©∫");
+		throw std::logic_error("shellcode empty");
+		return 1;
+	}
+	QString QShellcode;
 	
+	QStringList List = input.split(",");
+	QString temp;
+	for (int i = 0; i < List.size(); i++)
+	{
+		if (List[i][List[i].size() - 1] == 'h')
+			List[i].chop(1);
+		while(List[i][0]==' '|| List[i][0] == '\n' || List[i][0] == '\r')
+			List[i] = List[i].mid(1);
+		if (List[i][0] == '0' && List[i][1] == 'x')
+			List[i] = List[i].mid(2);
+		for (int j = 0; j < 2; j++)
+			if (!(List[i][j] >= '0' && List[i][j] <= '9') && !(List[i][j] >= 'A' && List[i][j] <= 'F') && !(List[i][j] >= 'a' && List[i][j] <= 'f'))
+			{
+				QMessageBox::critical(this, "ÈîôËØØ", "ËæìÂÖ•ÊúâËØØÔºöÂ≠òÂú®ÈùûÊ≥ïÂ≠óÁ¨¶");
+				return 1;
+			}
+
+		temp.append(QChar((unsigned char)List[i].toInt(NULL, 16)));
+	}
+
+	std::string shellcodestr = temp.toLatin1().toStdString();	//ÂåÖÂê´ASCIIÊâ©Â±ïÂ≠óÁ¨¶
+
+	ppt->ShellcodeInjection(shellcodestr.data(), shellcodestr.size());
+
+	QString CharStr;
+	QTextCursor HexCursor(ui.TargetTextHex->textCursor());
+	QTextCursor CharCursor(ui.TargetTextChar->textCursor());
+	for (int i = 0; i < ppt->NumberOfSections; i++)
+	{
+		if (!strcmp((const char*)ppt->SectionNames[i].data(), ".text"))
+		{
+			HexCursor.setPosition(ppt->SectionHeaders[i].PointerToRawData * 3);
+			HexCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, shellcodestr.size() * 3 - 1);
+			CharCursor.setPosition(ppt->SectionHeaders[i].PointerToRawData / 16 * 17);
+			CharCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, shellcodestr.size() / 16 * 17);
+
+			for (size_t j = 0; j < shellcodestr.size(); j++)
+			{
+
+				// Â§ÑÁêÜ0-31Âíå127ÁöÑ‰∏çÂèØÊâìÂç∞Â≠óÁ¨¶
+				if ((unsigned int)shellcodestr[j] < 32 || (unsigned int)shellcodestr[j] == 127)
+					CharStr += '.';
+				else
+					CharStr += QChar((unsigned char)shellcodestr[j]);
+
+				if ((j + (ppt->SectionHeaders[i].PointerToRawData / 16 * 17) + 1) % 16 == 0)
+					CharStr += '\n';
+			}
+		}
+	}
+
+	HexCursor.insertText(StdStringToStructHexQString(shellcodestr));
+	CharCursor.insertText(CharStr);
+	
+
 	return 0;
 }
 
 int SonPage::MakeAssembly(HANDLE hFile)
 {
-	ppt->AssemblyA(hFile);
+	ppt->MakeAssembly(hFile);
 	return 0;
 }

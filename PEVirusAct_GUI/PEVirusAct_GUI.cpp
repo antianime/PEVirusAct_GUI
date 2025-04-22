@@ -1,51 +1,78 @@
-#include "PEVirusAct_GUI.h"
+ï»¿#include "PEVirusAct_GUI.h"
 #include"SonPage.h"
 
-// ¹¹Ôìº¯Êý£¬³õÊ¼»¯Ö÷´°¿Ú
+// æž„é€ å‡½æ•°ï¼Œåˆå§‹åŒ–ä¸»çª—å£
 PEVirusAct_GUI::PEVirusAct_GUI(QWidget *parent)
-    : QMainWindow(parent)           // µ÷ÓÃ¸¸ÀàQMainWindowµÄ¹¹Ôìº¯Êý
+    : QMainWindow(parent)           // è°ƒç”¨çˆ¶ç±»QMainWindowçš„æž„é€ å‡½æ•°
 {
-    ui.setupUi(this);               // Ê¹ÓÃUIÎÄ¼þÉèÖÃ½çÃæ
+    ui.setupUi(this);               // ä½¿ç”¨UIæ–‡ä»¶è®¾ç½®ç•Œé¢
 
-    // Á¬½Ó²Ëµ¥Ïî"OpenFile"µÄ´¥·¢ÐÅºÅµ½²Ûº¯ÊýOpenFileAndCreateSonPage
+    // è¿žæŽ¥èœå•é¡¹"OpenFile"çš„è§¦å‘ä¿¡å·åˆ°æ§½å‡½æ•°OpenFileAndCreateSonPage
     connect(ui.OpenFile, &QAction::triggered, this, &PEVirusAct_GUI::OpenFileAndCreateSonPage);
+	connect(ui.tabWidget, &QTabWidget::tabCloseRequested, this, [this](int index) {
+		QWidget* widget = ui.tabWidget->widget(index);
+		if (widget)
+		{
+			SonPage* sonPage = qobject_cast<SonPage*>(widget);
+			if (sonPage)
+			{
+				sonPage->ppt->~PETamper();
+				delete sonPage;
+			}
+		}
+		ui.tabWidget->removeTab(index);
+		});
 
 }
 
-// Îö¹¹º¯Êý
+// æžæž„å‡½æ•°
 PEVirusAct_GUI::~PEVirusAct_GUI()
-{}
+{
+    for (int index = ui.tabWidget->count(); index > 0; index--)
+    {
+        ui.tabWidget->removeTab(index);
+    }
+}
 
-// ´ò¿ªÎÄ¼þ²¢´´½¨×ÓÒ³ÃæµÄ²Ûº¯Êý
+// æ‰“å¼€æ–‡ä»¶å¹¶åˆ›å»ºå­é¡µé¢çš„æ§½å‡½æ•°
 int PEVirusAct_GUI::OpenFileAndCreateSonPage()
 {
-    // ´ò¿ªÎÄ¼þ¶Ô»°¿ò
-    //QString temp = u8"Ñ¡ÔñÎÄ¼þ";            // Ê¹ÓÃu8Ç°×ºÈ·±£UTF-8±àÂë
+    // æ‰“å¼€æ–‡ä»¶å¯¹è¯æ¡†
+    //QString temp = u8"é€‰æ‹©æ–‡ä»¶";            // ä½¿ç”¨u8å‰ç¼€ç¡®ä¿UTF-8ç¼–ç 
 
-    QString temp = QStringLiteral("Ñ¡ÔñÎÄ¼þ");
+    QString temp = QStringLiteral("é€‰æ‹©æ–‡ä»¶");
 
-    // ²ÎÊýËµÃ÷£º¸¸´°¿Ú¡¢¶Ô»°¿ò±êÌâ¡¢Ä¬ÈÏÂ·¾¶¡¢ÎÄ¼þ¹ýÂËÆ÷
+    // å‚æ•°è¯´æ˜Žï¼šçˆ¶çª—å£ã€å¯¹è¯æ¡†æ ‡é¢˜ã€é»˜è®¤è·¯å¾„ã€æ–‡ä»¶è¿‡æ»¤å™¨
     QString FileName = QFileDialog::getOpenFileName(this, temp, "", "All Files (*)");
-    //QString FileName = QFileDialog::getOpenFileName(this, "Ñ¡ÔñÎÄ¼þ", "", "All Files (*)");
+    //QString FileName = QFileDialog::getOpenFileName(this, "é€‰æ‹©æ–‡ä»¶", "", "All Files (*)");
+    if (FileName.isEmpty())
+        return 0;
 
-    // Ê¹ÓÃÎÄ¼þÃû´´½¨×ÓÒ³Ãæ£¬this±íÊ¾¸¸´°¿ÚÊÇµ±Ç°Ö÷´°¿Ú
-    SonPage* sonPage = new SonPage(this, FileName);
+    // ä½¿ç”¨æ–‡ä»¶ååˆ›å»ºå­é¡µé¢ï¼Œthisè¡¨ç¤ºçˆ¶çª—å£æ˜¯å½“å‰ä¸»çª—å£
+    SonPage* sonPage;
+    try {
+        sonPage = new SonPage(this, FileName);
+    }
+    catch (std::exception& e) {
+        QMessageBox::critical(this, "é”™è¯¯", QString::fromStdString(e.what()));
+        return 1;
+    };
 
 
-    // ´¦ÀíÎÄ¼þÃû£º´ÓÍêÕûÂ·¾¶ÖÐÌáÈ¡ÎÄ¼þÃû²¿·Ö
-    // ´Ó×Ö·û´®Ä©Î²ÏòÇ°±éÀú£¬ÕÒµ½×îºóÒ»¸ö'/'×Ö·û
+    // å¤„ç†æ–‡ä»¶åï¼šä»Žå®Œæ•´è·¯å¾„ä¸­æå–æ–‡ä»¶åéƒ¨åˆ†
+    // ä»Žå­—ç¬¦ä¸²æœ«å°¾å‘å‰éåŽ†ï¼Œæ‰¾åˆ°æœ€åŽä¸€ä¸ª'/'å­—ç¬¦
 	for (int i = FileName.size() - 1; i >= 0; i--)
 	{
 		if (FileName[i] == '/')
 		{
 
-            // Ê¹ÓÃmid½ØÈ¡'/'Ö®ºóµÄ²¿·Ö×÷ÎªÎÄ¼þÃû
+            // ä½¿ç”¨midæˆªå–'/'ä¹‹åŽçš„éƒ¨åˆ†ä½œä¸ºæ–‡ä»¶å
             FileName = FileName.mid(i + 1);
 			break;
 		}
 	}
 
-    // ½«×ÓÒ³ÃæÌí¼Óµ½tabWidgetÖÐ£¬Ê¹ÓÃÎÄ¼þÃû×÷Îª±êÇ©
+    // å°†å­é¡µé¢æ·»åŠ åˆ°tabWidgetä¸­ï¼Œä½¿ç”¨æ–‡ä»¶åä½œä¸ºæ ‡ç­¾
     ui.tabWidget->addTab(sonPage, FileName);
     //qDebug() << "test";
 

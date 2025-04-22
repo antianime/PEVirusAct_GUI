@@ -14,42 +14,19 @@
    <string>PEVirusAct_GUI</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>690</x>
-      <y>610</y>
-      <width>81</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
-   </widget>
-   <widget class="QTextEdit" name="TestBlock">
-    <property name="geometry">
-     <rect>
-      <x>860</x>
-      <y>550</y>
-      <width>211</width>
-      <height>131</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
       <width>1071</width>
-      <height>551</height>
+      <height>631</height>
      </rect>
     </property>
+    <property name="tabsClosable">
+     <bool>true</bool>
+    </property>
    </widget>
-   <zorder>pushButton</zorder>
-   <zorder>tabWidget</zorder>
-   <zorder>TestBlock</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

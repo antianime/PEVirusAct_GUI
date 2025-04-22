@@ -1,26 +1,10 @@
-#include"PETamper.h"
+ï»¿#include"PETamper.h"
 
 using namespace std;
 
 unsigned char check[] = "CHECKCHECK";
-/*
-IMAGE_DOS_HEADER idh;           //DOSÍ·£¨ÒÔ"MZ"¿ªÍ·£©
-IMAGE_NT_HEADERS inh;			//NTÍ·£¨PEÇ©Ãû¡¢ÎÄ¼şÍ·¡¢¿ÉÑ¡Í·£©
 
-WORD NumberOfSections;			// ½ÚÇøÊıÁ¿
-
-// ½ÚÇøÏà¹ØÊı¾İ½á¹¹
-std::vector<IMAGE_SECTION_HEADER> SectionHeaders;	// ´æ´¢ËùÓĞ½ÚÇøÍ·
-//std::vector<BYTE[8]> SectionNames;
-//std::vector<BYTE*> SectionNames;
-std::vector<std::vector<BYTE>>SectionNames;			// ´æ´¢ËùÓĞ½ÚÇøÃû³Æ
-std::vector<BYTE> stubbuffer;
-
-*/
-
-					// ´æ´¢DOS´æ¸ùÊı¾İ
-
-unsigned char shellcode[];							// ´æ´¢shellcode´úÂë
+//unsigned char shellcode[];							// å­˜å‚¨shellcodeä»£ç 
 
 
 
@@ -29,31 +13,33 @@ unsigned char shellcode[];							// ´æ´¢shellcode´úÂë
 
 PETamper::PETamper(HANDLE hFile)
 {
-	unsigned long NumberOfBytesRead;	// ¶ÁÈ¡×Ö½ÚÊı¼ÆÊı
-	unsigned char MZSignal[2];			// ÓÃÓÚ¼ì²é"MZ"Ç©ÃûµÄ»º³åÇø
+	unsigned long NumberOfBytesRead;	// è¯»å–å­—èŠ‚æ•°è®¡æ•°
+	unsigned char MZSignal[2];			// ç”¨äºæ£€æŸ¥"MZ"ç­¾åçš„ç¼“å†²åŒº
 
-	// ´ò¿ªPEÎÄ¼ş£¬»ñÈ¡ÎÄ¼ş¾ä±ú
+	// æ‰“å¼€PEæ–‡ä»¶ï¼Œè·å–æ–‡ä»¶å¥æŸ„
 	
 	this->hFile = hFile;
 	
 
-	// ¼ì²éPEÎÄ¼ş¿ªÍ·µÄ"MZ"Ç©Ãû£¨DOSÍ·Ç©Ãû£©
-	SetFilePointer(hFile, 0, NULL, 0);		// ½«ÎÄ¼şÖ¸ÕëÒÆ¶¯µ½ÎÄ¼ş¿ªÍ·
+	// æ£€æŸ¥PEæ–‡ä»¶å¼€å¤´çš„"MZ"ç­¾åï¼ˆDOSå¤´ç­¾åï¼‰
+	SetFilePointer(hFile, 0, NULL, 0);		// å°†æ–‡ä»¶æŒ‡é’ˆç§»åŠ¨åˆ°æ–‡ä»¶å¼€å¤´
 	if (!ReadFile(hFile, MZSignal, sizeof(MZSignal), &NumberOfBytesRead, NULL))
 	{
+		throw std::ios_base::failure("ReadFile failed at MZSignal!");
 		cout << "ReadFile failed at MZSignal!" << endl;
 		cout << "GetLastError: " << GetLastError() << endl;
 		return;
 	}
-	if (MZSignal[0] != 'M' || MZSignal[1] != 'Z')		// ¼ì²éÇ©ÃûÊÇ·ñÕıÈ·
+	if (MZSignal[0] != 'M' || MZSignal[1] != 'Z')		// æ£€æŸ¥ç­¾åæ˜¯å¦æ­£ç¡®
 	{
+		throw std::invalid_argument("This is not a PE file!");
 		cout << "This is not a PE file!" << endl;
 		cout << "GetLastError: " << GetLastError() << endl;
 		return;
 	}
 
-	// ¶ÁÈ¡DOSÍ·£¨IMAGE_DOS_HEADER½á¹¹£©
-	SetFilePointer(hFile, 0, NULL, 0);			// ÖØÖÃÎÄ¼şÖ¸Õëµ½¿ªÍ·
+	// è¯»å–DOSå¤´ï¼ˆIMAGE_DOS_HEADERç»“æ„ï¼‰
+	SetFilePointer(hFile, 0, NULL, 0);			// é‡ç½®æ–‡ä»¶æŒ‡é’ˆåˆ°å¼€å¤´
 	if (!ReadFile(hFile, &idh, sizeof(IMAGE_DOS_HEADER), &NumberOfBytesRead, NULL))
 	{
 		cout << "ReadFile failed at IMAGE_DOS_HEADER!" << endl;
@@ -63,11 +49,11 @@ PETamper::PETamper(HANDLE hFile)
 
 	
 
-	// ¶ÁÈ¡DOS´æ¸ù,  ÆäÖĞe_lfanewÊÇ´ÓDOSÍ·µ½PEÇ©ÃûµÄÆ«ÒÆÁ¿
+	// è¯»å–DOSå­˜æ ¹,  å…¶ä¸­e_lfanewæ˜¯ä»DOSå¤´åˆ°PEç­¾åçš„åç§»é‡
 	//char* stubbuffer = new char[idh.e_lfanew - sizeof(IMAGE_DOS_HEADER)];
 	stubbuffer.resize(idh.e_lfanew - sizeof(IMAGE_DOS_HEADER));
 
-	SetFilePointer(hFile, sizeof(IMAGE_DOS_HEADER), NULL, 0);		// ÒÆ¶¯µ½DOSÍ·Ö®ºó
+	SetFilePointer(hFile, sizeof(IMAGE_DOS_HEADER), NULL, 0);		// ç§»åŠ¨åˆ°DOSå¤´ä¹‹å
 
 	if (!ReadFile(hFile, stubbuffer.data(), stubbuffer.size(), &NumberOfBytesRead, NULL))
 	{
@@ -77,7 +63,7 @@ PETamper::PETamper(HANDLE hFile)
 	}
 
 
-	// ¶ÁÈ¡NTÍ·£¨PEÇ©ÃûºÍÍ·ĞÅÏ¢),  ÆäÖĞe_lfanewÊÇ´ÓDOSÍ·µ½PEÇ©ÃûµÄÆ«ÒÆÁ¿
+	// è¯»å–NTå¤´ï¼ˆPEç­¾åå’Œå¤´ä¿¡æ¯),  å…¶ä¸­e_lfanewæ˜¯ä»DOSå¤´åˆ°PEç­¾åçš„åç§»é‡
 	SetFilePointer(hFile, idh.e_lfanew, NULL, 0);
 	if (!ReadFile(hFile, &inh, sizeof(IMAGE_NT_HEADERS), &NumberOfBytesRead, NULL))
 	{
@@ -86,17 +72,17 @@ PETamper::PETamper(HANDLE hFile)
 		return;
 	}
 
-	// ´ÓÎÄ¼şÍ·»ñÈ¡½ÚÇøÊıÁ¿£¨´æ´¢ÔÚÎÄ¼şÍ·µÄNumberOfSections×Ö¶Î£©
+	// ä»æ–‡ä»¶å¤´è·å–èŠ‚åŒºæ•°é‡ï¼ˆå­˜å‚¨åœ¨æ–‡ä»¶å¤´çš„NumberOfSectionså­—æ®µï¼‰
 	NumberOfSections = inh.FileHeader.NumberOfSections;
-	SectionHeaders.resize(NumberOfSections);		// µ÷Õû½ÚÇøÍ·ÏòÁ¿´óĞ¡
-	SectionNames.resize(NumberOfSections);			// µ÷Õû½ÚÇøÃû³ÆÏòÁ¿´óĞ¡
-	Sections.resize(NumberOfSections);				// µ÷Õû½ÚÇøÊı¾İÏòÁ¿´óĞ¡
+	SectionHeaders.resize(NumberOfSections);		// è°ƒæ•´èŠ‚åŒºå¤´å‘é‡å¤§å°
+	SectionNames.resize(NumberOfSections);			// è°ƒæ•´èŠ‚åŒºåç§°å‘é‡å¤§å°
+	Sections.resize(NumberOfSections);				// è°ƒæ•´èŠ‚åŒºæ•°æ®å‘é‡å¤§å°
 
-	// ¼ÆËã½ÚÇøÍ·µÄÎ»ÖÃ£º
-	// DOSÍ· + PEÇ©Ãû(4×Ö½Ú) + ÎÄ¼şÍ·(20×Ö½Ú) + ¿ÉÑ¡Í·´óĞ¡
+	// è®¡ç®—èŠ‚åŒºå¤´çš„ä½ç½®ï¼š
+	// DOSå¤´ + PEç­¾å(4å­—èŠ‚) + æ–‡ä»¶å¤´(20å­—èŠ‚) + å¯é€‰å¤´å¤§å°
 	SetFilePointer(hFile, idh.e_lfanew + sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER) + inh.FileHeader.SizeOfOptionalHeader, NULL, 0);
 
-	// ¶ÁÈ¡ËùÓĞ½ÚÇøÍ·ĞÅÏ¢
+	// è¯»å–æ‰€æœ‰èŠ‚åŒºå¤´ä¿¡æ¯
 	for (WORD i = 0; i < NumberOfSections; i++)
 	{
 		if (!ReadFile(hFile, &SectionHeaders[i], sizeof(IMAGE_SECTION_HEADER), &NumberOfBytesRead, NULL))
@@ -106,7 +92,7 @@ PETamper::PETamper(HANDLE hFile)
 			return;
 		}
 
-		// ´òÓ¡½ÚÇøÃû³Æ£¨8×Ö½ÚÒÔnullÌî³äµÄ×Ö·û´®£©
+		// æ‰“å°èŠ‚åŒºåç§°ï¼ˆ8å­—èŠ‚ä»¥nullå¡«å……çš„å­—ç¬¦ä¸²ï¼‰
 		//cout << "Section Name: ";
 		for (int j = 0; j < 8; j++)
 		{
@@ -122,7 +108,7 @@ PETamper::PETamper(HANDLE hFile)
 	for (WORD i = 0; i < NumberOfSections; i++)
 	{
 		Sections[i].resize(SectionHeaders[i].SizeOfRawData);
-		SetFilePointer(hFile, SectionHeaders[i].PointerToRawData, NULL, 0);	// ÒÆ¶¯µ½½ÚÇøÊı¾İµÄÆğÊ¼Î»ÖÃ
+		SetFilePointer(hFile, SectionHeaders[i].PointerToRawData, NULL, 0);	// ç§»åŠ¨åˆ°èŠ‚åŒºæ•°æ®çš„èµ·å§‹ä½ç½®
 		if (!ReadFile(hFile, Sections[i].data(), SectionHeaders[i].SizeOfRawData, &NumberOfBytesRead, NULL))
 		{
 			cout << "ReadFile failed at Sections " << i << " : " << SectionNames[i].data() << endl;
@@ -142,7 +128,7 @@ PETamper::~PETamper()
 
 
 
-/* ×é×°PEÎÄ¼şº¯Êı */
+/* ç»„è£…PEæ–‡ä»¶å‡½æ•° */
 
 
 
@@ -154,13 +140,13 @@ std::string PETamper::Assembly()
 	RawSizeNRawAddressAdjust();
 
 
-	// 1. Ğ´ÈëDOSÍ·
+	// 1. å†™å…¥DOSå¤´
 
-	// 3. ´¦ÀíPEÍ·¶ÔÆë
+	// 3. å¤„ç†PEå¤´å¯¹é½
 	if (sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() > idh.e_lfanew)
 	{
-		// ¼ÆËã4×Ö½Ú¶ÔÆëµÄÆ«ÒÆÁ¿
-		idh.e_lfanew += 4 * ((sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() + 3) % 4);//PEÍ·°´0x4¶ÔÆë
+		// è®¡ç®—4å­—èŠ‚å¯¹é½çš„åç§»é‡
+		idh.e_lfanew += 4 * ((sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() + 3) % 4);//PEå¤´æŒ‰0x4å¯¹é½
 	}
 
 	
@@ -168,11 +154,11 @@ std::string PETamper::Assembly()
 	temp.assign(reinterpret_cast<char*>(&idh), sizeof(idh));
 	result += temp;
 
-	temp.assign(reinterpret_cast<char*>(&stubbuffer), sizeof(stubbuffer));
+	temp.assign(reinterpret_cast<char*>(stubbuffer.data()), stubbuffer.size());
 	result += temp;
 
-	// 4. Èç¹ûĞèÒª£¬Ìî³ä¿Õ°×ÇøÓò
-	if (sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() < idh.e_lfanew)//Ìî³ä0x0
+	// 4. å¦‚æœéœ€è¦ï¼Œå¡«å……ç©ºç™½åŒºåŸŸ
+	if (sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() < idh.e_lfanew)//å¡«å……0x0
 	{
 		temp.resize(idh.e_lfanew - sizeof(IMAGE_DOS_HEADER) - stubbuffer.size());
 		std::fill(temp.begin(), temp.end(), 0); // Fill the string with null characters
@@ -219,7 +205,7 @@ std::string PETamper::Assembly()
 
 
 
-bool PETamper::AssemblyA(HANDLE hFile)
+bool PETamper::MakeAssembly(HANDLE hFile)
 {
 	unsigned long NumberOfBytesRead;
 	std::string FillStr;
@@ -229,8 +215,14 @@ bool PETamper::AssemblyA(HANDLE hFile)
 	//adjust
 	RawSizeNRawAddressAdjust();
 
+	// 3. å¤„ç†PEå¤´å¯¹é½
+	if (sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() > idh.e_lfanew)
+	{
+		// è®¡ç®—4å­—èŠ‚å¯¹é½çš„åç§»é‡
+		idh.e_lfanew += 4 * ((sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() + 3) % 4);//PEå¤´æŒ‰0x4å¯¹é½
+	}
 
-	// 1. Ğ´ÈëDOSÍ·
+	// 1. å†™å…¥DOSå¤´
 	SetFilePointer(hFile, 0, NULL, 0);
 	if (!WriteFile(hFile, &idh, sizeof(IMAGE_DOS_HEADER), &NumberOfBytesRead, NULL))
 	{
@@ -242,31 +234,26 @@ bool PETamper::AssemblyA(HANDLE hFile)
 	//cout << "NumberOfBytesRead" << NumberOfBytesRead << endl;
 	//stubbuffer.data();
 
-	// 2. Ğ´ÈëDOS´æ¸ù
-	SetFilePointer(hFile, sizeof(IMAGE_DOS_HEADER), NULL, 0);		// ÒÆ¶¯µ½DOSÍ·Ö®ºó
+	// 2. å†™å…¥DOSå­˜æ ¹
+	SetFilePointer(hFile, sizeof(IMAGE_DOS_HEADER), NULL, 0);		// ç§»åŠ¨åˆ°DOSå¤´ä¹‹å
 	WriteFile(hFile, stubbuffer.data(), stubbuffer.size(), NULL, NULL);
 	
-	// 3. ´¦ÀíPEÍ·¶ÔÆë
-	if (sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() > idh.e_lfanew)
-	{
-		// ¼ÆËã4×Ö½Ú¶ÔÆëµÄÆ«ÒÆÁ¿
-		idh.e_lfanew += 4 * ((sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() + 3) % 4);//PEÍ·°´0x4¶ÔÆë
-	}
+	
 
-	// 4. Èç¹ûĞèÒª£¬Ìî³ä¿Õ°×ÇøÓò
-	if (sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() < idh.e_lfanew)//Ìî³ä0x0
+	// 4. å¦‚æœéœ€è¦ï¼Œå¡«å……ç©ºç™½åŒºåŸŸ
+	if (sizeof(IMAGE_DOS_HEADER) + stubbuffer.size() < idh.e_lfanew)//å¡«å……0x0
 	{
 		FillStr.resize(idh.e_lfanew - sizeof(IMAGE_DOS_HEADER) - stubbuffer.size());
 		std::fill(FillStr.begin(), FillStr.end(), 0); // Fill the string with null characters
 		WriteFile(hFile, FillStr.data(), FillStr.length(), NULL, NULL);
 	}
 
-	// 5. Ğ´ÈëNTÍ·
+	// 5. å†™å…¥NTå¤´
 	WriteFile(hFile, &inh, sizeof(IMAGE_NT_HEADERS), NULL, NULL);
 
-	//ÎÄ¼ş¶ÔÆë£¬¿ÕÏ¶
+	//æ–‡ä»¶å¯¹é½ï¼Œç©ºéš™
 
-	// 6. Ğ´ÈëËùÓĞ½ÚÇøÍ·
+	// 6. å†™å…¥æ‰€æœ‰èŠ‚åŒºå¤´
 	for (int i = 0; i < NumberOfSections; i++)
 		WriteFile(hFile, &SectionHeaders[i], sizeof(IMAGE_SECTION_HEADER), NULL, NULL);
 	//WriteFile(hFile, check, sizeof(check), NULL, NULL);
@@ -274,11 +261,6 @@ bool PETamper::AssemblyA(HANDLE hFile)
 	
 	for (WORD i = 0; i < NumberOfSections; i++)
 	{
-
-
-
-
-		//cout << SectionNames[i] << endl;
 		if (!strcmp((const char*)SectionNames[i].data(), ".text"))
 		{
 			if (SectionHeaders[i].PointerToRawData > idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER) * NumberOfSections)
@@ -290,6 +272,7 @@ bool PETamper::AssemblyA(HANDLE hFile)
 			
 		}
 	}
+
 	//Write Sections
 	for (WORD i = 0; i < NumberOfSections; i++)
 	{
@@ -300,35 +283,35 @@ bool PETamper::AssemblyA(HANDLE hFile)
 }
 
 
-// ³õÊ¼»¯×Ö¶ÎĞÅÏ¢½á¹¹ÌåÏòÁ¿
-// ¸ù¾İÃ¿¸ö×Ö¶ÎµÄ´óĞ¡¼ÆËãÆäÔÚ½á¹¹ÌåÖĞµÄÆ«ÒÆÁ¿
-bool HeaderInfoIni(vector<FieldInfo>HEADER_INFO)
+// åˆå§‹åŒ–å­—æ®µä¿¡æ¯ç»“æ„ä½“å‘é‡
+// æ ¹æ®æ¯ä¸ªå­—æ®µçš„å¤§å°è®¡ç®—å…¶åœ¨ç»“æ„ä½“ä¸­çš„åç§»é‡
+bool HeaderInfoIni(vector<FieldInfo>HEADER_INFO)	//
 {
-	// ±éÀúËùÓĞ×Ö¶ÎĞÅÏ¢
+	// éå†æ‰€æœ‰å­—æ®µä¿¡æ¯
 	for (int i = 0; i < HEADER_INFO.size(); i++)
 	{
 		if (i == 0)
-			HEADER_INFO[i].offset = 0;		// µÚÒ»¸ö×Ö¶ÎÆ«ÒÆÁ¿Îª0
+			HEADER_INFO[i].offset = 0;		// ç¬¬ä¸€ä¸ªå­—æ®µåç§»é‡ä¸º0
 		else
-			// ºóĞø×Ö¶ÎÆ«ÒÆÁ¿ = Ç°Ò»¸ö×Ö¶ÎÆ«ÒÆÁ¿ + Ç°Ò»¸ö×Ö¶Î´óĞ¡
+			// åç»­å­—æ®µåç§»é‡ = å‰ä¸€ä¸ªå­—æ®µåç§»é‡ + å‰ä¸€ä¸ªå­—æ®µå¤§å°
 			HEADER_INFO[i].offset = HEADER_INFO[i - 1].offset + HEADER_INFO[i - 1].size;
 	}
 	return true;
 
 }
 
-// ĞŞ¸ÄPEÎÄ¼şµÄÈë¿ÚµãµØÖ·
+// ä¿®æ”¹PEæ–‡ä»¶çš„å…¥å£ç‚¹åœ°å€
 bool PETamper::EntryPointCoverA(HANDLE hpFile, DWORD EntryPoint)
 {
 	unsigned long NumberOfBytesRead;
 
-	// ½«ÎÄ¼şÖ¸ÕëÒÆ¶¯µ½PEÍ·ÖĞµÄÈë¿ÚµãµØÖ·Î»ÖÃ
+	// å°†æ–‡ä»¶æŒ‡é’ˆç§»åŠ¨åˆ°PEå¤´ä¸­çš„å…¥å£ç‚¹åœ°å€ä½ç½®
 	SetFilePointer(hpFile, inh.OptionalHeader.AddressOfEntryPoint, NULL, 0);
 
-	// Ğ´ÈëĞÂµÄÈë¿ÚµãµØÖ·
+	// å†™å…¥æ–°çš„å…¥å£ç‚¹åœ°å€
 	WriteFile(hpFile, &EntryPoint, sizeof(EntryPoint), &NumberOfBytesRead, NULL);
 
-	 // ¼ì²é²Ù×÷ÊÇ·ñ³É¹¦
+	 // æ£€æŸ¥æ“ä½œæ˜¯å¦æˆåŠŸ
 	if (GetLastError() != ERROR_SUCCESS)
 	{
 		std::cout << "ERROR:  " << GetLastError() << endl;
@@ -339,18 +322,18 @@ bool PETamper::EntryPointCoverA(HANDLE hpFile, DWORD EntryPoint)
 }
 
 
-// ĞŞ¸ÄPEÎÄ¼şÖ¸¶¨½ÚÇøµÄÊı¾İ
+// ä¿®æ”¹PEæ–‡ä»¶æŒ‡å®šèŠ‚åŒºçš„æ•°æ®
 bool PETamper::SectionTamperA(HANDLE hpFile, LONG Point, unsigned char* buffer)
 {
 	unsigned long NumberOfBytesRead;
 
-	// ½«ÎÄ¼şÖ¸ÕëÒÆ¶¯µ½Ö¸¶¨Î»ÖÃ
+	// å°†æ–‡ä»¶æŒ‡é’ˆç§»åŠ¨åˆ°æŒ‡å®šä½ç½®
 	SetFilePointer(hpFile, Point, NULL, 0);
 
-	// Ğ´ÈëĞÂµÄ½ÚÇøÊı¾İ
+	// å†™å…¥æ–°çš„èŠ‚åŒºæ•°æ®
 	WriteFile(hpFile, buffer, sizeof(buffer), &NumberOfBytesRead, NULL);
 
-	// ¼ì²é²Ù×÷ÊÇ·ñ³É¹¦
+	// æ£€æŸ¥æ“ä½œæ˜¯å¦æˆåŠŸ
 	if (GetLastError() != ERROR_SUCCESS)
 	{
 		std::cout << "ERROR:  " << GetLastError() << endl;
@@ -362,58 +345,58 @@ bool PETamper::SectionTamperA(HANDLE hpFile, LONG Point, unsigned char* buffer)
 }
 
 
-// ĞŞ¸ÄDOSÍ·ÖĞµÄÌØ¶¨×Ö¶Î
+// ä¿®æ”¹DOSå¤´ä¸­çš„ç‰¹å®šå­—æ®µ
 bool PETamper::DOSFieldTamper(PVOID object, LONG Point, string buffer)
 {
-	// ¼ì²éµãÎ»ÖÃÊÇ·ñÓĞĞ§
+	// æ£€æŸ¥ç‚¹ä½ç½®æ˜¯å¦æœ‰æ•ˆ
 	if (Point > IMAGE_DOS_HEADER_INFO.size())
 	{
 		cout << "POINT ERROR! at DOSFieldTamper" << endl;
 		return false;
 	}
 
-	// ¼ì²é»º³åÇø´óĞ¡ÊÇ·ñ³¬¹ı×Ö¶Î´óĞ¡
+	// æ£€æŸ¥ç¼“å†²åŒºå¤§å°æ˜¯å¦è¶…è¿‡å­—æ®µå¤§å°
 	if (IMAGE_DOS_HEADER_INFO[Point].size < buffer.size())
 	{
 		cout << "BUFFER LENGTH ERROR! at DOSFieldTamper" << endl;
 		return false;
 	}
 
-	// ÓÃ0Ìî³ä»º³åÇøÊ¹Æä´ïµ½×Ö¶Î´óĞ¡
-	buffer.append(IMAGE_DOS_HEADER_INFO[Point].size - buffer.size(), 0); //Ìî³ä0x0
+	// ç”¨0å¡«å……ç¼“å†²åŒºä½¿å…¶è¾¾åˆ°å­—æ®µå¤§å°
+	buffer.append(IMAGE_DOS_HEADER_INFO[Point].size - buffer.size(), 0); //å¡«å……0x0
 
-	// ½«»º³åÇøÊı¾İ¸´ÖÆµ½DOSÍ·µÄÖ¸¶¨×Ö¶Î
+	// å°†ç¼“å†²åŒºæ•°æ®å¤åˆ¶åˆ°DOSå¤´çš„æŒ‡å®šå­—æ®µ
 	memmove(&idh + IMAGE_DOS_HEADER_INFO[Point].offset, buffer.c_str(), IMAGE_DOS_HEADER_INFO[Point].size);
 
 	return true;
 }
 
-// Í¨ÓÃ×Ö¶ÎĞŞ¸Äº¯Êı
+// é€šç”¨å­—æ®µä¿®æ”¹å‡½æ•°
 bool PETamper::FieldTamper(PVOID object, LONG Point, char* buffer)
 {
 	
-	// ½«»º³åÇøÊı¾İ¸´ÖÆµ½¶ÔÏóµÄÖ¸¶¨Î»ÖÃ
+	// å°†ç¼“å†²åŒºæ•°æ®å¤åˆ¶åˆ°å¯¹è±¡çš„æŒ‡å®šä½ç½®
 	memmove((PVOID)((LONGLONG)object + (LONGLONG)Point), buffer, sizeof(buffer));
 
 	return true;
 }
 
-// ĞŞ¸Ä.text½ÚÇøÊı¾İ²¢¸üĞÂÈë¿Úµã
+// ä¿®æ”¹.textèŠ‚åŒºæ•°æ®å¹¶æ›´æ–°å…¥å£ç‚¹
 bool PETamper::TextSectionTamperA(HANDLE hpFile, unsigned char* buffer, DWORD EntryPoint)
 {
 	unsigned long NumberOfBytesRead;
 	DWORD PointerToRawPointer;
 
-	// ±éÀúËùÓĞ½ÚÇø
+	// éå†æ‰€æœ‰èŠ‚åŒº
 	for (WORD i = 0; i < NumberOfSections; i++)
 	{
-		// ²éÕÒ.text½ÚÇø
+		// æŸ¥æ‰¾.textèŠ‚åŒº
 		if (!strcmp((const char*)SectionNames[i].data(), ".text"))
 		{
-			// ĞŞ¸Ä.text½ÚÇøÊı¾İ
+			// ä¿®æ”¹.textèŠ‚åŒºæ•°æ®
 			SectionTamperA(hpFile, SectionHeaders[i].PointerToRawData, buffer);
 
-			// ¸üĞÂÈë¿ÚµãµØÖ·
+			// æ›´æ–°å…¥å£ç‚¹åœ°å€
 			EntryPointCoverA(hpFile, EntryPoint);
 			return true;
 		}
@@ -422,18 +405,23 @@ bool PETamper::TextSectionTamperA(HANDLE hpFile, unsigned char* buffer, DWORD En
 }
 
 
-// µ÷Õû½ÚÇøµÄÔ­Ê¼´óĞ¡ºÍÔ­Ê¼µØÖ·
+// è°ƒæ•´èŠ‚åŒºçš„åŸå§‹å¤§å°å’ŒåŸå§‹åœ°å€
 bool PETamper::RawSizeNRawAddressAdjust()
 {
-	// ¼ÆËã½ÚÇøµÄSizeOfRawDataºÍPointerToRawData
+	int temprva;
+	// è®¡ç®—èŠ‚åŒºçš„SizeOfRawDataå’ŒPointerToRawData
+	/*
 	for (WORD i = 0; i < NumberOfSections; i++)
 	{
 
-		// ÉèÖÃ½ÚÇøÔ­Ê¼´óĞ¡ÎªÊµ¼ÊÊı¾İ´óĞ¡
+		// è®¾ç½®èŠ‚åŒºåŸå§‹å¤§å°ä¸ºå®é™…æ•°æ®å¤§å°
 		SectionHeaders[i].SizeOfRawData = Sections[i].size();
 	}
+	
+	*/
+	
 
-	// µ÷ÕûNTÍ·Î»ÖÃ
+	// è°ƒæ•´NTå¤´ä½ç½®
 	if (idh.e_lfanew < sizeof(IMAGE_DOS_HEADER) + stubbuffer.size())
 	{
 		idh.e_lfanew = sizeof(IMAGE_DOS_HEADER) + stubbuffer.size();
@@ -442,85 +430,91 @@ bool PETamper::RawSizeNRawAddressAdjust()
 	string zerobuffer;
 	int tempsize;
 
-	// µ÷ÕûÃ¿¸ö½ÚÇøµÄÎÄ¼ş¶ÔÆëºÍÔ­Ê¼Ö¸Õë
+	// è°ƒæ•´æ¯ä¸ªèŠ‚åŒºçš„æ–‡ä»¶å¯¹é½å’ŒåŸå§‹æŒ‡é’ˆ
 	for (int i = 0; i < NumberOfSections; i++)
 	{
-		//½Ú¶ÔÆë
+		//èŠ‚å¯¹é½
+		if (SectionHeaders[i].SizeOfRawData == 0 || SectionHeaders[i].PointerToRawData == 0)
+			continue;
 
-		// ¼ÆËãµ±Ç°½ÚÇø´óĞ¡ÓëÎÄ¼ş¶ÔÆëµÄÓàÊı
+		// è®¡ç®—å½“å‰èŠ‚åŒºå¤§å°ä¸æ–‡ä»¶å¯¹é½çš„ä½™æ•°
 		tempsize = Sections[i].size() % inh.OptionalHeader.FileAlignment;
 		if (SectionHeaders[i].SizeOfRawData != 0)
 		{
-			// Èç¹ûĞèÒª¶ÔÆë£¬Ìî³ä0Ö±µ½¶ÔÆë
+			// å¦‚æœéœ€è¦å¯¹é½ï¼Œå¡«å……0ç›´åˆ°å¯¹é½
 			if (tempsize != 0)
 			{
 				Sections[i].resize(Sections[i].size() + inh.OptionalHeader.FileAlignment - tempsize, '\0');
 				SectionHeaders[i].SizeOfRawData = Sections[i].size();
 			}
 				
-			// ÉèÖÃ½ÚÇøÔÚÎÄ¼şÖĞµÄÔ­Ê¼Î»ÖÃ
+			// è®¾ç½®èŠ‚åŒºåœ¨æ–‡ä»¶ä¸­çš„åŸå§‹ä½ç½®
 			if (i == 0 || SectionHeaders[i - 1].SizeOfRawData == 0 || SectionHeaders[i - 1].PointerToRawData == 0)
 			{
-				// ¼ÆËãµÚÒ»¸ö½ÚÇøµÄ¶ÔÆë
-				tempsize = (idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER)) % inh.OptionalHeader.FileAlignment;
+				// è®¡ç®—ç¬¬ä¸€ä¸ªèŠ‚åŒºçš„å¯¹é½
+				tempsize = (idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER) * NumberOfSections) % inh.OptionalHeader.FileAlignment;
 				if (tempsize != 0)
 				{
-					SectionHeaders[i].PointerToRawData = inh.OptionalHeader.FileAlignment + (idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER)) - tempsize;
+					SectionHeaders[i].PointerToRawData = inh.OptionalHeader.FileAlignment + (idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER) * NumberOfSections) - tempsize;
 					//Sections[i].insert(Sections[i].begin(), zerobuffer.begin(), zerobuffer.end());
 					//SectionHeaders[i].PointerToRawData = idh.e_lfanew + sizeof(IMAGE_NT_HEADERS) + sizeof(IMAGE_SECTION_HEADER) * NumberOfSections + stubbuffer.size() + sizeof(IMAGE_DOS_HEADER);
+				
+					//qDebug() << SectionHeaders[i].PointerToRawData;
 				}
 			}
 			else
 			{
-				// ºóĞø½ÚÇøµÄÎ»ÖÃ = Ç°Ò»¸ö½ÚÇøÎ»ÖÃ + Ç°Ò»¸ö½ÚÇø´óĞ¡
+				// åç»­èŠ‚åŒºçš„ä½ç½® = å‰ä¸€ä¸ªèŠ‚åŒºä½ç½® + å‰ä¸€ä¸ªèŠ‚åŒºå¤§å°
 				SectionHeaders[i].PointerToRawData = SectionHeaders[i - 1].PointerToRawData + SectionHeaders[i - 1].SizeOfRawData;
 			}
 		}
 			
 
-			
 	}
 
 	return true;
 }
 
 
-// ¶ÁÈ¡Õû¸öÎÄ¼şÄÚÈİµ½×Ö·û´®
+// è¯»å–æ•´ä¸ªæ–‡ä»¶å†…å®¹åˆ°å­—ç¬¦ä¸²
 string PETamper::AllBin()
 {
-	// »ñÈ¡ÎÄ¼ş´óĞ¡
+	// è·å–æ–‡ä»¶å¤§å°
 	DWORD Filesize = GetFileSize(hFile, NULL);
 	//std::string FileBin.resize(Filesize);
 	std::string FileBin;
 
-	// µ÷Õû×Ö·û´®´óĞ¡ÒÔÈİÄÉÕû¸öÎÄ¼ş
+	// è°ƒæ•´å­—ç¬¦ä¸²å¤§å°ä»¥å®¹çº³æ•´ä¸ªæ–‡ä»¶
 	FileBin.resize(Filesize);
 
-	// ½«ÎÄ¼şÖ¸ÕëÒÆ¶¯µ½¿ªÍ·
+	// å°†æ–‡ä»¶æŒ‡é’ˆç§»åŠ¨åˆ°å¼€å¤´
 	SetFilePointer(hFile, 0, 0, NULL);
 
-	// ¶ÁÈ¡Õû¸öÎÄ¼şÄÚÈİ
+	// è¯»å–æ•´ä¸ªæ–‡ä»¶å†…å®¹
 	if (!ReadFile(hFile, FileBin.data(), Filesize, NULL, NULL))
 	{
-		qDebug() << "ReadFileError at SHOWSOURCEHEX" << GetLastError();
+		QMessageBox::critical(NULL, "é”™è¯¯", "è¯»å–æ–‡ä»¶å¤±è´¥");
 		return 0;
 	}
 
-	// Ìí¼Ó×Ö·û´®½áÊø·û
+	// æ·»åŠ å­—ç¬¦ä¸²ç»“æŸç¬¦
 	
 	FileBin += '\0';
 	return FileBin;
 }
 
 
-bool PETamper::ShellcodeInjection(char* buffer)
+bool PETamper::ShellcodeInjection(char buffer[], int size)
 {
 	for (int i = 0; i < NumberOfSections; i++)
 	{
-		if (strcmp((const char*)SectionNames[i].data(), ".text"))
+		if (!strcmp((const char*)SectionNames[i].data(), ".text"))
 		{
-			Sections[i].resize(sizeof(buffer));
-			memmove(Sections[i].data(), buffer, sizeof(buffer));
+			//Sections[i].resize(size);
+			memmove(Sections[i].data(), buffer, size);
+			//SectionHeaders[i].SizeOfRawData = size;
+			inh.OptionalHeader.AddressOfEntryPoint = SectionHeaders[i].VirtualAddress;
+			//RawSizeNRawAddressAdjust();
 			return 0;
 		}
 	}
