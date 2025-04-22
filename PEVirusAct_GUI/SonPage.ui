@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1068</width>
-    <height>511</height>
+    <height>594</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -129,13 +129,13 @@
      <x>560</x>
      <y>360</y>
      <width>501</width>
-     <height>150</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="minimumSize">
     <size>
-     <width>150</width>
-     <height>150</height>
+     <width>0</width>
+     <height>0</height>
     </size>
    </property>
   </widget>
@@ -145,7 +145,7 @@
      <x>0</x>
      <y>360</y>
      <width>521</width>
-     <height>151</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="minimumSize">
@@ -153,6 +153,32 @@
      <width>0</width>
      <height>0</height>
     </size>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="MakeAssembly">
+   <property name="geometry">
+    <rect>
+     <x>920</x>
+     <y>540</y>
+     <width>131</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>MakeAssembly</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ShellcodeTamper">
+   <property name="geometry">
+    <rect>
+     <x>760</x>
+     <y>540</y>
+     <width>141</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>ShellcodeTamper</string>
    </property>
   </widget>
  </widget>

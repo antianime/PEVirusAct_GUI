@@ -1,8 +1,15 @@
-#pragma once
+ï»¿#pragma once
 
 #include <QWidget>
 #include "ui_SonPage.h"
 #include"PETamper.h"
+
+typedef struct highlight {
+	int HexPos = -1;
+	int HexLength = -1;
+	int CharPos = -1;
+	int CharLength = -1;
+}highlight;
 
 class SonPage : public QWidget
 {
@@ -11,18 +18,21 @@ class SonPage : public QWidget
 public:
 	QString FilePath;
 	PETamper *ppt;
+	struct highlight SourceHighLight;
+	struct highlight TargetHighLight;
 	SonPage(QWidget* parent = nullptr, QString FileName = NULL);
 
 	~SonPage();
 
-	//int WindowInitial();      //´°¿Ú³õÊ¼»¯
-	int FieldTreeInitial(); //×Ö¶ÎÊ÷³õÊ¼»¯ ·Åµ½¹¹Ôìº¯Êı
+	//int WindowInitial();      //çª—å£åˆå§‹åŒ–
+	int SourceFieldTreeInitial(); //å­—æ®µæ ‘åˆå§‹åŒ– æ”¾åˆ°æ„é€ å‡½æ•°
+	int TargetFieldTreeInitial();
+	int FieldTreeAdjust();
 
 	int ShowSource();
 	int ShowTarget();
-	int syncLineScrolling();
 	int ShellcodeTamper();
-	int SlotsInitial();
+	//int SlotsInitial();
 	int ScrollInitial();
 	//int FieldHighlight(int position, int address, int size);
 	int FieldModify(int position, int address, int size, std::string buffer);

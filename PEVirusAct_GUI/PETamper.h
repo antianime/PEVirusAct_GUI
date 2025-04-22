@@ -1,18 +1,18 @@
-#pragma once
+ï»¿#pragma once
 #include"fh.h"
 
 
 class PETamper
 {
 public:
-	IMAGE_DOS_HEADER idh;           //DOSÍ·£¨ÒÔ"MZ"¿ªÍ·£©
-	IMAGE_NT_HEADERS inh;			//NTÍ·£¨PEÇ©Ãû¡¢ÎÄ¼şÍ·¡¢¿ÉÑ¡Í·£©
-	std::vector<BYTE> stubbuffer;						// ´æ´¢DOS´æ¸ùÊı¾İ
-	// ½ÚÇøÏà¹ØÊı¾İ½á¹¹
+	IMAGE_DOS_HEADER idh;           //DOSå¤´ï¼ˆä»¥"MZ"å¼€å¤´ï¼‰
+	IMAGE_NT_HEADERS inh;			//NTå¤´ï¼ˆPEç­¾åã€æ–‡ä»¶å¤´ã€å¯é€‰å¤´ï¼‰
+	std::vector<BYTE> stubbuffer;						// å­˜å‚¨DOSå­˜æ ¹æ•°æ®
+	// èŠ‚åŒºç›¸å…³æ•°æ®ç»“æ„
 	WORD NumberOfSections;
-	std::vector<IMAGE_SECTION_HEADER> SectionHeaders;	// ´æ´¢ËùÓĞ½ÚÇøÍ·
-	std::vector<std::vector<BYTE>>SectionNames;			// ´æ´¢ËùÓĞ½ÚÇøÃû³Æ
-	std::vector<std::vector<BYTE>>Sections;			// ´æ´¢ËùÓĞ½ÚÇøÊı¾İ
+	std::vector<IMAGE_SECTION_HEADER> SectionHeaders;	// å­˜å‚¨æ‰€æœ‰èŠ‚åŒºå¤´
+	std::vector<std::vector<BYTE>>SectionNames;			// å­˜å‚¨æ‰€æœ‰èŠ‚åŒºåç§°
+	std::vector<std::vector<BYTE>>Sections;			// å­˜å‚¨æ‰€æœ‰èŠ‚åŒºæ•°æ®
 
 	HANDLE hFile;
 
@@ -25,7 +25,7 @@ public:
 	bool TextSectionTamperA(HANDLE hFile, unsigned char* buffer, DWORD EntryPoint);
 	bool EntryPointCoverA(HANDLE hFile, DWORD EntryPoint);
 	bool FieldTamper(PVOID object, LONG Point, char* buffer);
-	bool ShellcodeInjection(char* buffer);
+	bool ShellcodeInjection(char buffer[], int size);
 	bool DOSFieldTamper(PVOID object, LONG Point, std::string buffer);
 	//bool AtomTamper(PVOID Struct, LONG Point, unsigned char* buffer, int size);  //obsolete
 
@@ -34,6 +34,6 @@ public:
 	string AllBin();
 
 	std::string Assembly();
-	bool AssemblyA(HANDLE hpFile);
+	bool MakeAssembly(HANDLE hpFile);
 
 };
